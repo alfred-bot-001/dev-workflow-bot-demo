@@ -395,10 +395,14 @@ function t(key, ...args) {
 
 // ── Tickets data ──────────────────────────────────────────────────────────────
 const TICKETS = [
-  { id:"PROJ-101", titleEn:"Login Page Redesign",    titleZh:"用户登录页面优化",  descEn:"Redesign login UI with phone+OTP support and remember me",   descZh:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能", priority:"High", est:"3h" },
-  { id:"PROJ-102", titleEn:"Payment Gateway",        titleZh:"支付接口集成",       descEn:"Integrate Stripe payment gateway with credit card & Apple Pay", descZh:"集成 Stripe 支付网关，支持信用卡和 Apple Pay", priority:"High", est:"5h" },
-  { id:"PROJ-103", titleEn:"Report Export Feature",  titleZh:"报表导出功能",       descEn:"Support Excel/PDF export for sales reports with date filters",  descZh:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围", priority:"Medium", est:"2h" },
-  { id:"PROJ-104", titleEn:"Push Notification System",titleZh:"推送通知系统",      descEn:"Integrate Firebase FCM for order status push notifications",    descZh:"集成 Firebase FCM，实现订单状态推送通知", priority:"Medium", est:"4h" },
+  { id:"PROJ-101", titleEn:"Login Page Redesign",       titleZh:"用户登录页面优化",   descEn:"Redesign login UI with phone+OTP support and remember me",        descZh:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能",   priority:"High",   est:"3h" },
+  { id:"PROJ-102", titleEn:"Payment Gateway",           titleZh:"支付接口集成",        descEn:"Integrate Stripe payment gateway with credit card & Apple Pay",    descZh:"集成 Stripe 支付网关，支持信用卡和 Apple Pay",              priority:"High",   est:"5h" },
+  { id:"PROJ-103", titleEn:"Report Export Feature",     titleZh:"报表导出功能",        descEn:"Support Excel/PDF export for sales reports with date filters",     descZh:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围",     priority:"Medium", est:"2h" },
+  { id:"PROJ-104", titleEn:"Push Notification System",  titleZh:"推送通知系统",        descEn:"Integrate Firebase FCM for order status push notifications",       descZh:"集成 Firebase FCM，实现订单状态推送通知",                   priority:"Medium", est:"4h" },
+  { id:"PROJ-105", titleEn:"User Dashboard Redesign",   titleZh:"用户仪表盘重设计",    descEn:"Redesign dashboard with customizable widgets and dark mode",       descZh:"重新设计仪表盘，支持自定义组件和暗色模式",                  priority:"High",   est:"6h" },
+  { id:"PROJ-106", titleEn:"Search & Filter Engine",    titleZh:"搜索与筛选功能",      descEn:"Full-text search with faceted filters and search suggestions",     descZh:"全文搜索，支持多维筛选和搜索建议",                          priority:"Medium", est:"4h" },
+  { id:"PROJ-107", titleEn:"API Rate Limiting",         titleZh:"API 限流功能",        descEn:"Implement per-user rate limiting with Redis and token bucket algo", descZh:"基于 Redis 实现用户级别 API 限流，令牌桶算法",              priority:"High",   est:"3h" },
+  { id:"PROJ-108", titleEn:"Onboarding Flow",           titleZh:"新用户引导流程",       descEn:"Step-by-step onboarding wizard for new users with tooltips",       descZh:"新用户注册后的分步引导向导，含功能提示",                    priority:"Low",    est:"2h" },
 ];
 function ticketTitle(t2) { return lang==="en" ? t2.titleEn : t2.titleZh; }
 function ticketDesc(t2)  { return lang==="en" ? t2.descEn  : t2.descZh; }
@@ -513,7 +517,7 @@ function renderTicketList() {
   TICKETS.forEach(tk=>{
     const card=document.createElement("div");
     card.className="ticket-card"; card.dataset.tid=tk.id; card.onclick=()=>selectTicket(tk.id);
-    const pc=tk.priority==="High"?"badge-high":"badge-medium";
+    const pc=tk.priority==="High"?"badge-high":tk.priority==="Low"?"badge-low":"badge-medium";
     const wf=ps.a.wf[tk.id];
     card.innerHTML=`<div class="ticket-id">${tk.id}</div>
       <div class="ticket-title-text">${ticketTitle(tk)}</div>
@@ -658,6 +662,34 @@ const TEST_CASES = {
     {id:"TC-03", name:"Order status update triggers push", priority:"P0"},
     {id:"TC-04", name:"Notification tapped opens correct page", priority:"P1"},
     {id:"TC-05", name:"Disabled notifications not delivered", priority:"P1"},
+  ],
+  "PROJ-105": [
+    {id:"TC-01", name:"Dashboard loads within 2s", priority:"P0"},
+    {id:"TC-02", name:"Widgets can be added/removed/reordered", priority:"P0"},
+    {id:"TC-03", name:"Dark mode toggle persists across sessions", priority:"P1"},
+    {id:"TC-04", name:"Dashboard layout saves correctly", priority:"P1"},
+    {id:"TC-05", name:"Responsive on tablet and mobile", priority:"P2"},
+  ],
+  "PROJ-106": [
+    {id:"TC-01", name:"Full-text search returns relevant results", priority:"P0"},
+    {id:"TC-02", name:"Faceted filters narrow results correctly", priority:"P0"},
+    {id:"TC-03", name:"Search suggestions appear on keypress", priority:"P1"},
+    {id:"TC-04", name:"Empty search shows helpful placeholder", priority:"P1"},
+    {id:"TC-05", name:"Search handles special characters safely", priority:"P1"},
+  ],
+  "PROJ-107": [
+    {id:"TC-01", name:"Rate limit triggers at threshold", priority:"P0"},
+    {id:"TC-02", name:"429 response returned with retry-after", priority:"P0"},
+    {id:"TC-03", name:"Rate limit resets after time window", priority:"P0"},
+    {id:"TC-04", name:"Different users have independent limits", priority:"P1"},
+    {id:"TC-05", name:"Redis failure falls back gracefully", priority:"P1"},
+  ],
+  "PROJ-108": [
+    {id:"TC-01", name:"Onboarding wizard shows on first login", priority:"P0"},
+    {id:"TC-02", name:"Each step tooltip displays correctly", priority:"P1"},
+    {id:"TC-03", name:"Skip button exits wizard cleanly", priority:"P1"},
+    {id:"TC-04", name:"Completed onboarding not shown again", priority:"P1"},
+    {id:"TC-05", name:"Progress indicator updates correctly", priority:"P2"},
   ],
 };
 
