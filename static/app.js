@@ -125,29 +125,59 @@ function handleRoleNotification(msg) {
 
 // ── Ticket UI ─────────────────────────────────────────────────────────────────
 async function selectTicket(ticketId) {
-  // User sends message
   const ticket = window.__tickets.find(t => t.id === ticketId);
   if (!ticket) return;
 
-  // Add to user's global chat
-  appendMessage("__global__", {
-    role: "user",
-    text: `处理 ${ticketId} — ${ticket.title}`,
-    ts: Date.now() / 1000
-  });
-  if (activeTicketId === "__global__") {
-    renderMessage({ role: "user", text: `处理 ${ticketId} — ${ticket.title}`, ticket_id: "__global__" });
-    scrollToBottom();
-  }
-
-  // Create thread for ticket
+  // Ensure thread exists and switch to it
   if (!chatThreads[ticketId]) chatThreads[ticketId] = { messages: [] };
-  activeTicketId = ticketId;
   addChatTab(ticketId, ticket.title);
   switchChatTab(ticketId);
 
-  // API call
-  await fetch(`/api/select_ticket/${ticketId}`, { method: "POST" });
+  const alreadyStarted = !!workflowStates[ticketId];
+
+  if (!alreadyStarted) {
+    // First time: call API, let server send bot message
+    await fetch(`/api/select_ticket/${ticketId}`, { method: "POST" });
+  } else {
+    // Already in progress: re-show task description locally with state-aware buttons
+    const state = workflowStates[ticketId];
+    const actions = getActionsForState(state?.state, ticketId);
+    const stateLabel = state?.state_label || "";
+    const descMsg = {
+      role: "bot",
+      ticket_id: ticketId,
+      text: `📋 **${ticket.id}** — ${ticket.title}\n\n需求描述：${ticket.description}\n⏱ 预估工时：${ticket.estimate}\n\n当前进度：**${stateLabel}**`,
+      actions: actions,
+      ts: Date.now() / 1000,
+    };
+    appendMessage(ticketId, descMsg);
+    renderMessage(descMsg);
+    scrollToBottom();
+  }
+}
+
+function getActionsForState(state, ticketId) {
+  const map = {
+    waiting_start: [
+      { label: "✅ 开始，先做 Spec 文档", action: "start_spec", ticket_id: ticketId },
+      { label: "⏭ 跳过，直接开始开发", action: "start_dev", ticket_id: ticketId },
+    ],
+    waiting_spec_review: [
+      { label: "✅ Spec 没问题，开始开发", action: "approve_spec", ticket_id: ticketId },
+      { label: "✏️ 需要修改 Spec", action: "reject_spec", ticket_id: ticketId },
+    ],
+    waiting_pr_review: [
+      { label: "✅ 代码没问题，审批通过", action: "approve_pr", ticket_id: ticketId },
+    ],
+    waiting_test_approval: [
+      { label: "✅ 审批，开始测试", action: "approve_test", ticket_id: ticketId },
+    ],
+    waiting_release: [
+      { label: "🚀 确认发布到生产", action: "approve_release", ticket_id: ticketId },
+    ],
+    done: [],
+  };
+  return map[state] || [];
 }
 
 async function triggerAction(action, ticketId) {
