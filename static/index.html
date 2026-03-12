@@ -11,72 +11,175 @@
 <!-- ── Header ── -->
 <header>
   <h1>🤖 Dev Workflow Bot <span>Demo</span></h1>
-  <div class="role-switcher">
-    <span style="font-size:12px;color:var(--text-dim);margin-right:4px">视角：</span>
-    <button class="role-btn active" data-role="dev">👨‍💻 Dev</button>
-    <button class="role-btn" data-role="tester">🧪 小B Tester</button>
-    <button class="role-btn" data-role="release">🚀 小C Release</button>
-  </div>
+  <div class="header-sub">AI 驱动的研发流程演示</div>
 </header>
 
-<!-- ── Main ── -->
-<div class="main">
+<!-- ── Person Tabs ── -->
+<div class="person-tabs">
+  <button class="person-tab active" data-person="a" onclick="switchPerson('a')">
+    <span class="person-avatar">👨‍💻</span>
+    <span class="person-info">
+      <span class="person-name">小A</span>
+      <span class="person-role">开发者</span>
+    </span>
+    <span class="person-badge" id="badge-a" style="display:none"></span>
+  </button>
+  <button class="person-tab" data-person="b" onclick="switchPerson('b')">
+    <span class="person-avatar">🧪</span>
+    <span class="person-info">
+      <span class="person-name">小B</span>
+      <span class="person-role">测试工程师</span>
+    </span>
+    <span class="person-badge" id="badge-b" style="display:none"></span>
+  </button>
+  <button class="person-tab" data-person="c" onclick="switchPerson('c')">
+    <span class="person-avatar">🚀</span>
+    <span class="person-info">
+      <span class="person-name">小C</span>
+      <span class="person-role">发布工程师</span>
+    </span>
+    <span class="person-badge" id="badge-c" style="display:none"></span>
+  </button>
+</div>
 
-  <!-- Left: Ticket list -->
-  <aside class="sidebar">
-    <div class="sidebar-title">📋 今日 Jira Tickets</div>
-    <div class="ticket-list" id="ticket-list">
-      <!-- filled by JS -->
-    </div>
-  </aside>
+<!-- ══════════════════ 小A 面板 ══════════════════ -->
+<div class="person-panel active" id="panel-a">
+  <div class="main">
+    <!-- Left: Ticket list -->
+    <aside class="sidebar">
+      <div class="sidebar-title">📋 今日 Jira Tickets</div>
+      <div class="ticket-list" id="ticket-list-a"></div>
+    </aside>
 
-  <!-- Center: Chat -->
-  <section class="chat-area">
-    <div class="chat-header">
-      <div>
-        <div class="chat-title" id="chat-title">Dev 助手</div>
-        <div class="chat-subtitle" id="chat-subtitle">点击左侧任务开始</div>
-      </div>
-      <div class="chat-tabs" id="chat-tabs">
-        <button class="chat-tab active" data-tid="__global__" onclick="switchChatTab('__global__')">主频道</button>
-      </div>
-    </div>
-
-    <!-- Role notification banner -->
-    <div class="role-banner" id="role-banner"></div>
-
-    <!-- Messages -->
-    <div class="messages" id="messages"></div>
-
-    <!-- Typing indicator (inside messages scroll area via JS) -->
-    <div style="padding: 0 20px 12px; flex-shrink:0; min-height:44px">
-      <div class="msg-row bot" id="typing-row" style="display:none">
-        <div class="msg-avatar">🤖</div>
-        <div id="typing-indicator" class="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
+    <!-- Center: Chat -->
+    <section class="chat-area">
+      <div class="chat-header">
+        <div>
+          <div class="chat-title" id="chat-title-a">Dev 助手</div>
+          <div class="chat-subtitle" id="chat-subtitle-a">点击左侧任务开始</div>
+        </div>
+        <div class="chat-tabs" id="chat-tabs-a">
+          <button class="chat-tab active" data-tid="__global__" onclick="switchChatTab('a','__global__')">主频道</button>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Right: Status panel -->
-  <aside class="status-panel">
-    <div class="panel-title">📊 开发流程进度</div>
-    <div class="panel-body">
-      <div class="step-list" id="step-list">
-        <!-- filled by JS -->
+      <div class="messages" id="messages-a"></div>
+      <div class="typing-wrap">
+        <div class="msg-row bot" id="typing-row-a" style="display:none">
+          <div class="msg-avatar">🤖</div>
+          <div class="typing-indicator">
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          </div>
+        </div>
       </div>
-      <div id="info-panel">
-        <div style="color:var(--text-dim);font-size:13px;margin-top:16px">点击左侧 Ticket 查看详情</div>
-      </div>
-    </div>
-  </aside>
+    </section>
 
+    <!-- Right: Steps panel -->
+    <aside class="status-panel">
+      <div class="panel-title">📊 开发流程进度</div>
+      <div class="panel-body">
+        <div class="step-list" id="step-list-a"></div>
+        <div id="info-panel-a"><div class="panel-hint">点击左侧 Ticket 查看详情</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════════════ 小B 面板 ══════════════════ -->
+<div class="person-panel" id="panel-b">
+  <div class="main">
+    <!-- Left: Test queue -->
+    <aside class="sidebar">
+      <div class="sidebar-title">🧪 待测试任务</div>
+      <div class="ticket-list" id="ticket-list-b">
+        <div class="empty-queue">暂无待测试任务<br><span>等待开发完成后通知</span></div>
+      </div>
+    </aside>
+
+    <!-- Center: Chat -->
+    <section class="chat-area">
+      <div class="chat-header">
+        <div>
+          <div class="chat-title">Bot 测试助手</div>
+          <div class="chat-subtitle">收到测试任务后在此交互</div>
+        </div>
+        <div class="chat-tabs" id="chat-tabs-b">
+          <button class="chat-tab active" data-tid="__b_global__" onclick="switchChatTab('b','__b_global__')">主频道</button>
+        </div>
+      </div>
+      <div class="messages" id="messages-b">
+        <div class="empty-state-msg">
+          <div class="empty-icon">🧪</div>
+          <div>等待小A 完成开发<br>测试任务会自动推送到这里</div>
+        </div>
+      </div>
+      <div class="typing-wrap">
+        <div class="msg-row bot" id="typing-row-b" style="display:none">
+          <div class="msg-avatar">🤖</div>
+          <div class="typing-indicator">
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Test results -->
+    <aside class="status-panel">
+      <div class="panel-title">📋 测试详情</div>
+      <div class="panel-body">
+        <div id="info-panel-b"><div class="panel-hint">收到测试任务后显示详情</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════════════ 小C 面板 ══════════════════ -->
+<div class="person-panel" id="panel-c">
+  <div class="main">
+    <!-- Left: Release queue -->
+    <aside class="sidebar">
+      <div class="sidebar-title">🚀 待发布任务</div>
+      <div class="ticket-list" id="ticket-list-c">
+        <div class="empty-queue">暂无待发布任务<br><span>等待测试通过后通知</span></div>
+      </div>
+    </aside>
+
+    <!-- Center: Chat -->
+    <section class="chat-area">
+      <div class="chat-header">
+        <div>
+          <div class="chat-title">Bot 发布助手</div>
+          <div class="chat-subtitle">收到发布任务后在此交互</div>
+        </div>
+        <div class="chat-tabs" id="chat-tabs-c">
+          <button class="chat-tab active" data-tid="__c_global__" onclick="switchChatTab('c','__c_global__')">主频道</button>
+        </div>
+      </div>
+      <div class="messages" id="messages-c">
+        <div class="empty-state-msg">
+          <div class="empty-icon">🚀</div>
+          <div>等待小B 测试通过<br>发布任务会自动推送到这里</div>
+        </div>
+      </div>
+      <div class="typing-wrap">
+        <div class="msg-row bot" id="typing-row-c" style="display:none">
+          <div class="msg-avatar">🤖</div>
+          <div class="typing-indicator">
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Release info -->
+    <aside class="status-panel">
+      <div class="panel-title">📋 发布详情</div>
+      <div class="panel-body">
+        <div id="info-panel-c"><div class="panel-hint">收到发布任务后显示详情</div></div>
+      </div>
+    </aside>
+  </div>
 </div>
 
 <script src="/static/app.js"></script>
-
 </body>
 </html>
