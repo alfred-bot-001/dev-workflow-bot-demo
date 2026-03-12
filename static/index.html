@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Workflow Bot Demo</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <h1>🤖 Dev Workflow Bot <span>Demo</span></h1>
+  <div class="role-switcher">
+    <span style="font-size:12px;color:var(--text-dim);margin-right:4px">视角：</span>
+    <button class="role-btn active" data-role="dev">👨‍💻 Dev</button>
+    <button class="role-btn" data-role="tester">🧪 小B Tester</button>
+    <button class="role-btn" data-role="release">🚀 小C Release</button>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Left: Ticket list -->
+  <aside class="sidebar">
+    <div class="sidebar-title">📋 今日 Jira Tickets</div>
+    <div class="ticket-list" id="ticket-list">
+      <!-- filled by JS -->
+    </div>
+  </aside>
+
+  <!-- Center: Chat -->
+  <section class="chat-area">
+    <div class="chat-header">
+      <div>
+        <div class="chat-title" id="chat-title">Dev 助手</div>
+        <div class="chat-subtitle" id="chat-subtitle">点击左侧任务开始</div>
+      </div>
+      <div class="chat-tabs" id="chat-tabs">
+        <button class="chat-tab active" data-tid="__global__" onclick="switchChatTab('__global__')">主频道</button>
+      </div>
+    </div>
+
+    <!-- Role notification banner -->
+    <div class="role-banner" id="role-banner"></div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages"></div>
+
+    <!-- Typing indicator (inside messages scroll area via JS) -->
+    <div style="padding: 0 20px 12px; flex-shrink:0; min-height:44px">
+      <div class="msg-row bot" id="typing-row" style="display:none">
+        <div class="msg-avatar">🤖</div>
+        <div id="typing-indicator" class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right: Status panel -->
+  <aside class="status-panel">
+    <div class="panel-title">📊 开发流程进度</div>
+    <div class="panel-body">
+      <div class="step-list" id="step-list">
+        <!-- filled by JS -->
+      </div>
+      <div id="info-panel">
+        <div style="color:var(--text-dim);font-size:13px;margin-top:16px">点击左侧 Ticket 查看详情</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>
