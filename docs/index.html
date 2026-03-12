@@ -1,27 +1,29 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dev Workflow Bot Demo</title>
   <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing:border-box; margin:0; padding:0; }
 :root {
-  --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
-  --border: #2e3347; --accent: #4f8ef7; --accent2: #6ee7b7;
-  --text: #e2e8f0; --text-dim: #8892a4;
-  --bot-bubble: #1e3a5f; --user-bubble: #1a2a1a;
-  --system-color: #64748b; --high: #f87171; --med: #fbbf24;
-  --low: #4ade80; --done: #6ee7b7;
-  --color-a: #4f8ef7; --color-b: #a78bfa; --color-c: #34d399;
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a;
+  --border:#2e3347; --accent:#4f8ef7; --accent2:#6ee7b7;
+  --text:#e2e8f0; --text-dim:#8892a4;
+  --bot-bubble:#1e3a5f; --user-bubble:#1a2a1a;
+  --system-color:#64748b; --high:#f87171; --med:#fbbf24;
+  --low:#4ade80; --done:#6ee7b7;
+  --color-a:#4f8ef7; --color-b:#a78bfa; --color-c:#34d399;
 }
-body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 header { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 20px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
 header h1 { font-size:17px; font-weight:700; color:var(--accent); }
 header h1 span { color:var(--text-dim); font-weight:400; }
 .header-sub { font-size:12px; color:var(--text-dim); }
+.lang-btn { margin-left:auto; padding:5px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); color:var(--text-dim); cursor:pointer; font-size:12px; font-weight:600; transition:all .2s; }
+.lang-btn:hover { border-color:var(--accent); color:var(--accent); }
 .person-tabs { display:flex; background:var(--surface); border-bottom:2px solid var(--border); padding:0 16px; flex-shrink:0; gap:4px; }
-.person-tab { display:flex; align-items:center; gap:10px; padding:10px 20px; background:transparent; border:none; border-bottom:3px solid transparent; margin-bottom:-2px; cursor:pointer; color:var(--text-dim); transition:all .2s; position:relative; }
+.person-tab { display:flex; align-items:center; gap:10px; padding:10px 20px; background:transparent; border:none; border-bottom:3px solid transparent; margin-bottom:-2px; cursor:pointer; color:var(--text-dim); transition:all .2s; }
 .person-tab:hover { color:var(--text); }
 .person-tab.active { color:var(--text); }
 .person-tab[data-person="a"].active { border-bottom-color:var(--color-a); }
@@ -43,7 +45,7 @@ header h1 span { color:var(--text-dim); font-weight:400; }
 .ticket-card.active { border-color:var(--accent); background:#1a2540; }
 .ticket-id { font-size:11px; color:var(--text-dim); margin-bottom:3px; }
 .ticket-title-text { font-size:13px; font-weight:600; line-height:1.4; margin-bottom:7px; }
-.ticket-meta { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.ticket-meta { display:flex; gap:5px; flex-wrap:wrap; }
 .badge { padding:2px 7px; border-radius:10px; font-size:11px; font-weight:600; }
 .badge-high { background:rgba(248,113,113,.15); color:var(--high); }
 .badge-medium { background:rgba(251,191,36,.15); color:var(--med); }
@@ -59,6 +61,7 @@ header h1 span { color:var(--text-dim); font-weight:400; }
 .queue-sub { font-size:11px; color:var(--text-dim); }
 .queue-status { font-size:11px; margin-top:5px; }
 .queue-status.pending { color:var(--med); }
+.queue-status.in-progress { color:var(--accent); }
 .queue-status.done { color:var(--done); }
 .empty-queue { padding:20px 12px; font-size:13px; color:var(--text-dim); text-align:center; line-height:1.8; }
 .empty-queue span { font-size:11px; }
@@ -88,12 +91,13 @@ header h1 span { color:var(--text-dim); font-weight:400; }
 .action-btn { padding:6px 13px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-size:12px; cursor:pointer; transition:all .2s; }
 .action-btn:hover { background:var(--accent); color:white; }
 .action-btn.done { opacity:.35; pointer-events:none; }
+.action-btn.danger { border-color:var(--color-c); color:var(--color-c); }
+.action-btn.danger:hover { background:var(--color-c); color:#0f1117; }
 .typing-indicator { display:flex; gap:4px; align-items:center; padding:9px 13px; background:var(--bot-bubble); border-radius:12px; border-bottom-left-radius:3px; }
 .typing-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:bounce 1.2s infinite; }
-.typing-dot:nth-child(2) { animation-delay:.2s; }
-.typing-dot:nth-child(3) { animation-delay:.4s; }
+.typing-dot:nth-child(2){animation-delay:.2s;} .typing-dot:nth-child(3){animation-delay:.4s;}
 @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-5px);opacity:1;} }
-.empty-state-msg { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-dim); font-size:13px; text-align:center; margin:auto; padding:40px 20px; line-height:1.7; }
+.empty-state-msg { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-dim); font-size:13px; text-align:center; padding:40px 20px; line-height:1.7; }
 .empty-icon { font-size:40px; }
 .status-panel { background:var(--surface); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
 .panel-title { padding:12px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -105,9 +109,7 @@ header h1 span { color:var(--text-dim); font-weight:400; }
 .step-item.done { color:var(--done); }
 .step-item.pending { color:var(--text-dim); }
 .step-num { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
-.step-num.active { background:var(--accent); color:white; }
-.step-num.done { background:var(--done); color:#0f1117; }
-.step-num.pending { background:var(--border); color:var(--text-dim); }
+.step-num.active{background:var(--accent);color:white;} .step-num.done{background:var(--done);color:#0f1117;} .step-num.pending{background:var(--border);color:var(--text-dim);}
 .info-section { margin-top:16px; border-top:1px solid var(--border); padding-top:14px; }
 .info-title { font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .info-row { margin-bottom:10px; }
@@ -115,119 +117,267 @@ header h1 span { color:var(--text-dim); font-weight:400; }
 .info-value { font-size:12px; color:var(--text); word-break:break-all; }
 .info-value a { color:var(--accent); text-decoration:none; }
 .info-value code { font-family:monospace; font-size:11px; background:rgba(255,255,255,.07); padding:1px 5px; border-radius:3px; }
-::-webkit-scrollbar { width:4px; height:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
-.bubble strong { font-weight:700; color:#fff; }
+::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.bubble strong{font-weight:700;color:#fff;}
+.manual-deploy-box { margin-top:8px; padding:10px 13px; border-radius:8px; border:1px solid var(--color-c); background:rgba(52,211,153,.06); font-size:12px; color:var(--text-dim); line-height:1.6; }
+.manual-deploy-box strong { color:var(--color-c); }
   </style>
 </head>
 <body>
 
 <header>
   <h1>🤖 Dev Workflow Bot <span>Demo</span></h1>
-  <div class="header-sub">AI 驱动的研发流程演示（纯前端）</div>
+  <div class="header-sub" id="header-sub">AI-driven Development Workflow Demo</div>
+  <button class="lang-btn" id="lang-toggle" onclick="toggleLang()">中文</button>
 </header>
 
 <div class="person-tabs">
   <button class="person-tab active" data-person="a" onclick="switchPerson('a')">
     <span class="person-avatar">👨‍💻</span>
-    <span class="person-info"><span class="person-name">小A</span><span class="person-role">开发者</span></span>
+    <span class="person-info"><span class="person-name" id="name-a">Alex</span><span class="person-role" id="role-a">Developer</span></span>
     <span class="person-badge" id="badge-a"></span>
   </button>
   <button class="person-tab" data-person="b" onclick="switchPerson('b')">
     <span class="person-avatar">🧪</span>
-    <span class="person-info"><span class="person-name">小B</span><span class="person-role">测试工程师</span></span>
+    <span class="person-info"><span class="person-name" id="name-b">Bob</span><span class="person-role" id="role-b">QA Engineer</span></span>
     <span class="person-badge" id="badge-b"></span>
   </button>
   <button class="person-tab" data-person="c" onclick="switchPerson('c')">
     <span class="person-avatar">🚀</span>
-    <span class="person-info"><span class="person-name">小C</span><span class="person-role">发布工程师</span></span>
+    <span class="person-info"><span class="person-name" id="name-c">Carol</span><span class="person-role" id="role-c">Release Engineer</span></span>
     <span class="person-badge" id="badge-c"></span>
   </button>
 </div>
 
-<!-- 小A -->
+<!-- Alex / 小A -->
 <div class="person-panel active" id="panel-a">
   <div class="main">
     <aside class="sidebar">
-      <div class="sidebar-title">📋 今日 Jira Tickets</div>
+      <div class="sidebar-title" id="sidebar-title-a">📋 Today's Jira Tickets</div>
       <div class="ticket-list" id="ticket-list-a"></div>
     </aside>
     <section class="chat-area">
       <div class="chat-header">
-        <div><div class="chat-title" id="chat-title-a">Dev 助手</div><div class="chat-subtitle" id="chat-subtitle-a">点击左侧任务开始</div></div>
-        <div class="chat-tabs" id="chat-tabs-a">
-          <button class="chat-tab active" data-tid="__a__" onclick="switchTab('a','__a__')">主频道</button>
-        </div>
+        <div><div class="chat-title" id="chat-title-a">Dev Assistant</div><div class="chat-subtitle" id="chat-subtitle-a">Click a ticket to start</div></div>
+        <div class="chat-tabs" id="chat-tabs-a"><button class="chat-tab active" data-tid="__a__" onclick="switchTab('a','__a__')" id="main-tab-a">Main</button></div>
       </div>
       <div class="messages" id="messages-a"></div>
       <div class="typing-wrap"><div class="msg-row bot" id="typing-a" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
     </section>
     <aside class="status-panel">
-      <div class="panel-title">📊 开发流程进度</div>
-      <div class="panel-body"><div class="step-list" id="step-list-a"></div><div id="info-a"><div class="panel-hint">点击左侧 Ticket 查看详情</div></div></div>
+      <div class="panel-title" id="panel-title-a">📊 Workflow Progress</div>
+      <div class="panel-body"><div class="step-list" id="step-list-a"></div><div id="info-a"><div class="panel-hint" id="panel-hint-a">Click a ticket to view details</div></div></div>
     </aside>
   </div>
 </div>
 
-<!-- 小B -->
+<!-- Bob / 小B -->
 <div class="person-panel" id="panel-b">
   <div class="main">
     <aside class="sidebar">
-      <div class="sidebar-title">🧪 待测试任务</div>
-      <div class="ticket-list" id="ticket-list-b"><div class="empty-queue">暂无待测试任务<br><span>等待开发完成后通知</span></div></div>
+      <div class="sidebar-title" id="sidebar-title-b">🧪 Test Queue</div>
+      <div class="ticket-list" id="ticket-list-b"><div class="empty-queue" id="empty-b">No test tasks yet<br><span>Waiting for dev to complete</span></div></div>
     </aside>
     <section class="chat-area">
       <div class="chat-header">
-        <div><div class="chat-title">Bot 测试助手</div><div class="chat-subtitle">收到测试任务后在此交互</div></div>
-        <div class="chat-tabs" id="chat-tabs-b"><button class="chat-tab active" data-tid="__b__" onclick="switchTab('b','__b__')">主频道</button></div>
+        <div><div class="chat-title" id="chat-title-b">Test Assistant Bot</div><div class="chat-subtitle" id="chat-subtitle-b">Test tasks will appear here</div></div>
+        <div class="chat-tabs" id="chat-tabs-b"><button class="chat-tab active" data-tid="__b__" onclick="switchTab('b','__b__')" id="main-tab-b">Main</button></div>
       </div>
-      <div class="messages" id="messages-b"><div class="empty-state-msg"><div class="empty-icon">🧪</div><div>等待小A 完成开发<br>测试任务会自动推送到这里</div></div></div>
+      <div class="messages" id="messages-b"><div class="empty-state-msg" id="empty-chat-b"><div class="empty-icon">🧪</div><div id="empty-chat-b-text">Waiting for Alex to finish development<br>Test tasks will be pushed here automatically</div></div></div>
       <div class="typing-wrap"><div class="msg-row bot" id="typing-b" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
     </section>
     <aside class="status-panel">
-      <div class="panel-title">📋 测试详情</div>
-      <div class="panel-body"><div id="info-b"><div class="panel-hint">收到测试任务后显示详情</div></div></div>
+      <div class="panel-title" id="panel-title-b">📋 Test Details</div>
+      <div class="panel-body"><div id="info-b"><div class="panel-hint" id="panel-hint-b">Details will appear when a test task arrives</div></div></div>
     </aside>
   </div>
 </div>
 
-<!-- 小C -->
+<!-- Carol / 小C -->
 <div class="person-panel" id="panel-c">
   <div class="main">
     <aside class="sidebar">
-      <div class="sidebar-title">🚀 待发布任务</div>
-      <div class="ticket-list" id="ticket-list-c"><div class="empty-queue">暂无待发布任务<br><span>等待测试通过后通知</span></div></div>
+      <div class="sidebar-title" id="sidebar-title-c">🚀 Release Queue</div>
+      <div class="ticket-list" id="ticket-list-c"><div class="empty-queue" id="empty-c">No release tasks yet<br><span>Waiting for tests to pass</span></div></div>
     </aside>
     <section class="chat-area">
       <div class="chat-header">
-        <div><div class="chat-title">Bot 发布助手</div><div class="chat-subtitle">收到发布任务后在此交互</div></div>
-        <div class="chat-tabs" id="chat-tabs-c"><button class="chat-tab active" data-tid="__c__" onclick="switchTab('c','__c__')">主频道</button></div>
+        <div><div class="chat-title" id="chat-title-c">Release Assistant Bot</div><div class="chat-subtitle" id="chat-subtitle-c">Release tasks will appear here</div></div>
+        <div class="chat-tabs" id="chat-tabs-c"><button class="chat-tab active" data-tid="__c__" onclick="switchTab('c','__c__')" id="main-tab-c">Main</button></div>
       </div>
-      <div class="messages" id="messages-c"><div class="empty-state-msg"><div class="empty-icon">🚀</div><div>等待小B 测试通过<br>发布任务会自动推送到这里</div></div></div>
+      <div class="messages" id="messages-c"><div class="empty-state-msg" id="empty-chat-c"><div class="empty-icon">🚀</div><div id="empty-chat-c-text">Waiting for Bob's tests to pass<br>Release tasks will be pushed here automatically</div></div></div>
       <div class="typing-wrap"><div class="msg-row bot" id="typing-c" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
     </section>
     <aside class="status-panel">
-      <div class="panel-title">📋 发布详情</div>
-      <div class="panel-body"><div id="info-c"><div class="panel-hint">收到发布任务后显示详情</div></div></div>
+      <div class="panel-title" id="panel-title-c">📋 Release Details</div>
+      <div class="panel-body"><div id="info-c"><div class="panel-hint" id="panel-hint-c">Details will appear when a release task arrives</div></div></div>
     </aside>
   </div>
 </div>
 
 <script>
-// ── Data ─────────────────────────────────────────────────────────────────────
+// ── i18n ──────────────────────────────────────────────────────────────────────
+let lang = "en";
+
+const T = {
+  en: {
+    headerSub: "AI-driven Development Workflow Demo",
+    langToggle: "中文",
+    nameA:"Alex", roleA:"Developer",
+    nameB:"Bob",  roleB:"QA Engineer",
+    nameC:"Carol",roleC:"Release Engineer",
+    sidebarA:"📋 Today's Jira Tickets",
+    sidebarB:"🧪 Test Queue",
+    sidebarC:"🚀 Release Queue",
+    chatTitleA:"Dev Assistant", chatSubA:"Click a ticket to start",
+    chatTitleB:"Test Assistant Bot", chatSubB:"Test tasks will appear here",
+    chatTitleC:"Release Assistant Bot", chatSubC:"Release tasks will appear here",
+    panelTitleA:"📊 Workflow Progress", panelTitleB:"📋 Test Details", panelTitleC:"📋 Release Details",
+    panelHintA:"Click a ticket to view details",
+    panelHintB:"Details will appear when a test task arrives",
+    panelHintC:"Details will appear when a release task arrives",
+    emptyB:"No test tasks yet", emptyBSub:"Waiting for dev to complete",
+    emptyC:"No release tasks yet", emptyCSub:"Waiting for tests to pass",
+    emptyChatB:"Waiting for Alex to finish development\nTest tasks will be pushed here automatically",
+    emptyChatC:"Waiting for Bob's tests to pass\nRelease tasks will be pushed here automatically",
+    mainTab:"Main",
+    // Workflow steps
+    steps:["Open Bot, View Jira","Select Task","Generate Tech Spec","Dev Approves, Start Coding","Parallel Tasks","Bot Auto Code Review","Dev Approves PR","Deploy Test Env & Notify Bob","Bob Approves, Start Testing","Tests Done, Notify Bob","Trigger Release, Notify Carol","Carol Deploys Manually"],
+    // Bot messages
+    greeting: (n,tickets) => `Good morning! 👋 You have <strong>${n} Jira tickets</strong> today:\n\n${tickets}\n\nWhich one would you like to start?`,
+    ticketCard: (id,title,desc,est) => `Got <strong>${id}</strong> — ${title}\n\n📋 Description: ${desc}\n⏱ Estimate: ${est}\n\nReady to start? I can generate the tech spec first.`,
+    alreadyStarted: (id,title,est,label) => `📋 <strong>${id}</strong> — ${title}\n\nDescription: ${title}\n⏱ Estimate: ${est}\n\nCurrent status: <strong>${label}</strong>`,
+    btnStartSpec:"✅ Start with Tech Spec", btnSkipSpec:"⏭ Skip, Start Coding Directly", btnSkip:"❌ Skip for now",
+    skipped:"Got it, skipping. Call me when you need me 👍",
+    specStart:"Great! Let me create the branch and generate the tech spec...",
+    creatingBranch:"⚙️ Creating Git branch...",
+    branchCreated:(b)=>`✅ Branch created: \`${b}\``,
+    generatingSpec:"📝 Generating tech spec document...",
+    specDone:(url,branch)=>`✅ Tech spec generated!\n\n📄 <strong>Spec Doc</strong>: <a href="${url}" target="_blank">View here</a>\n🌿 <strong>Branch</strong>: <code>${branch}</code>\n\nIncludes: tech stack, API design, data model, test strategy.\n\nPlease review and let me know if we can proceed 👇`,
+    btnApproveSpec:"✅ Spec looks good, start coding", btnReviseSpec:"✏️ Need revisions",
+    devStart:"🚀 Starting development! I'll notify you when done.",
+    parallelHint:(id,title)=>`💡 Tip: You can work on other tasks in parallel, e.g. <strong>${id}</strong> — ${title}`,
+    btnParallel:(id)=>`Start ${id}`,
+    devStep:["Analyzing requirements...","Setting up architecture...","Implementing core logic...","Writing unit tests...","Linting & formatting..."],
+    reviewingCode:"🔍 Running automated code review...",
+    devDone:(issues,sugg,prUrl)=>`🎉 Development complete! Automated code review done:\n\n${issues>0?"⚠️":"✅"} <strong>${issues} issue(s)</strong> / <strong>${sugg} suggestion(s)</strong>\n📊 ${issues} issues, ${sugg} suggestions. Code quality is good.\n\n🔗 <strong>PR</strong>: <a href="${prUrl}" target="_blank">Pull Request</a>\n\nPlease review the code and approve when ready 👇`,
+    btnApprovePR:"✅ Code looks good, approve", btnRequestChanges:"💬 Request changes",
+    deployStart:"✅ PR approved! Creating test environment...",
+    creatingTestEnv:"🚀 Creating isolated test environment...",
+    testEnvReady:(url)=>`✅ Test environment ready: ${url}`,
+    testNotified:(url)=>`📬 <strong>Bob (QA)</strong> has been notified.\n\n🌐 Test env: <a href="${url}" target="_blank">${url}</a>\n📋 Test cases are ready, waiting for Bob's approval.`,
+    // Bob messages
+    bobTaskArrived:(title,url)=>`📋 New test task: <strong>${title}</strong>\n\nTest environment is ready. Please review the test cases and approve to start testing.\n\n🌐 Test env: <a href="${url}" target="_blank">${url}</a>`,
+    btnApproveTest:"✅ Approve & Start Testing",
+    bobApproved:"✅ Approve & Start Testing",
+    testingStart:"🧪 Starting automated test execution...",
+    testStep:["Initializing test environment...","Running UI test suite...","Running API integration tests...","Running performance tests...","Generating test report..."],
+    testDone:(p,t,cov,dur)=>`✅ <strong>All tests passed!</strong>\n\n📊 Passed: ${p}/${t} | Failed: 0 | Coverage: ${cov}\n⏱ Duration: ${dur}\n\nCode quality is excellent. Ready for production! 🎉`,
+    // Alex notified of test result
+    testPassedNotify:(p,t,cov)=>`✅ All tests passed!\n\n📊 ${p}/${t} passed | Coverage: ${cov}\n\n<strong>Carol (Release)</strong> has been notified to deploy.`,
+    // Carol messages
+    carolTaskArrived:(title)=>`🚀 Release Task: <strong>${title}</strong>\n\nAll tests have passed. This requires <strong>manual deployment</strong>.\n\nPlease proceed with the deployment steps when ready.`,
+    btnStartDeploy:"🚀 Start Manual Deployment",
+    carolStartDeploy:"🚀 Start Manual Deployment",
+    deployInProgress:(id)=>`⚙️ Manual deployment for ${id} in progress...`,
+    deployGuide:`Please follow the deployment runbook:\n\n1. <code>git pull origin main</code>\n2. Run <code>./scripts/deploy.sh production</code>\n3. Verify health checks at <code>/health</code>\n4. Monitor error rate for 5 mins\n\nClick below when deployment is complete.`,
+    btnDeployDone:"✅ Deployment Complete — Close Task",
+    carolDeployDone:"✅ Deployment Complete",
+    releaseConfirmed:(ver,id)=>`🎉 <strong>Manual deployment confirmed!</strong>\n\n📦 Version: <strong>${ver}</strong>\n🌐 Production: <a href="https://app.example.com" target="_blank">app.example.com</a>\n\n✅ Task <strong>${id}</strong> is now <strong>CLOSED</strong>. Great work!`,
+    // Alex final
+    releaseDone:(id,ver)=>`🎉 <strong>${id} deployed successfully!</strong>\n\nCarol completed manual deployment.\n\n📦 Version: <strong>${ver}</strong>\n🌐 <a href="https://app.example.com" target="_blank">app.example.com</a>\n\n✅ Full workflow complete!`,
+    // Queue card labels
+    testTaskLabel:"🧪 Test Task", releaseTaskLabel:"🚀 Release Task",
+    pending:"⏳ Pending", inProgress:"⚙️ In progress", done:"✅ Deployed",
+    // Info panel
+    infoTicket:"Ticket", infoStatus:"Status", infoStage:"Stage", infoBranch:"Branch",
+    infoSpec:"Spec Doc", infoPR:"Pull Request", infoTestEnv:"Test Env", infoVersion:"Version",
+    statusPendingTest:"Awaiting test approval", statusPendingRelease:"Awaiting manual deploy",
+    statusReleasing:"Manual deployment in progress",
+  },
+  zh: {
+    headerSub: "AI 驱动的研发流程演示",
+    langToggle: "English",
+    nameA:"小A", roleA:"开发者",
+    nameB:"小B", roleB:"测试工程师",
+    nameC:"小C", roleC:"发布工程师",
+    sidebarA:"📋 今日 Jira Tickets",
+    sidebarB:"🧪 待测试任务",
+    sidebarC:"🚀 待发布任务",
+    chatTitleA:"Dev 助手", chatSubA:"点击左侧任务开始",
+    chatTitleB:"Bot 测试助手", chatSubB:"收到测试任务后在此交互",
+    chatTitleC:"Bot 发布助手", chatSubC:"收到发布任务后在此交互",
+    panelTitleA:"📊 开发流程进度", panelTitleB:"📋 测试详情", panelTitleC:"📋 发布详情",
+    panelHintA:"点击左侧 Ticket 查看详情",
+    panelHintB:"收到测试任务后显示详情",
+    panelHintC:"收到发布任务后显示详情",
+    emptyB:"暂无待测试任务", emptyBSub:"等待开发完成后通知",
+    emptyC:"暂无待发布任务", emptyCSub:"等待测试通过后通知",
+    emptyChatB:"等待小A 完成开发\n测试任务会自动推送到这里",
+    emptyChatC:"等待小B 测试通过\n发布任务会自动推送到这里",
+    mainTab:"主频道",
+    steps:["打开 Bot，查看 Jira","选择任务","生成技术规范 Spec","Dev 审批，下令开发","并行任务","Bot 自动 Code Review","Dev 审批 PR","部署测试环境 & 通知小B","小B 审批，开始测试","测试完成，通知小B","触发发布，通知小C","小C 人工发布"],
+    greeting:(n,tickets)=>`早上好！👋 你今天有 <strong>${n} 个</strong> Jira 任务：\n\n${tickets}\n\n要开始开发哪个？`,
+    ticketCard:(id,title,desc,est)=>`收到 <strong>${id}</strong> — ${title}\n\n📋 需求描述：${desc}\n⏱ 预估工时：${est}\n\n要开始做吗？我可以先生成技术规范文档。`,
+    alreadyStarted:(id,title,est,label)=>`📋 <strong>${id}</strong> — ${title}\n\n预估工时：${est}\n\n当前进度：<strong>${label}</strong>`,
+    btnStartSpec:"✅ 开始，先做 Spec 文档", btnSkipSpec:"⏭ 跳过，直接开始开发", btnSkip:"❌ 暂不处理",
+    skipped:"好的，已跳过。有需要随时叫我 👍",
+    specStart:"好的！我来拉代码分支并生成技术规范文档...",
+    creatingBranch:"⚙️ 正在创建 Git 分支...",
+    branchCreated:(b)=>`✅ 分支已创建：\`${b}\``,
+    generatingSpec:"📝 正在生成技术规范文档（Spec）...",
+    specDone:(url,branch)=>`✅ 技术规范文档已生成！\n\n📄 <strong>Spec 文档</strong>：<a href="${url}" target="_blank">点击查看</a>\n🌿 <strong>开发分支</strong>：<code>${branch}</code>\n\n主要内容包括：技术选型、接口设计、数据模型、测试策略。\n\n请 Review 后告诉我是否可以开始开发 👇`,
+    btnApproveSpec:"✅ Spec 没问题，开始开发", btnReviseSpec:"✏️ 需要修改",
+    devStart:"🚀 开始开发！我会在完成后通知你。",
+    parallelHint:(id,title)=>`💡 提示：开发期间你可以同时处理其他任务，比如 <strong>${id}</strong> — ${title}`,
+    btnParallel:(id)=>`开始处理 ${id}`,
+    devStep:["分析需求文档...","搭建基础框架...","实现核心逻辑...","编写单元测试...","代码格式化 & Lint 检查..."],
+    reviewingCode:"🔍 Bot 正在执行第一轮 Code Review...",
+    devDone:(issues,sugg,prUrl)=>`🎉 代码开发完成！已完成第一轮自动 Code Review：\n\n${issues>0?"⚠️":"✅"} <strong>${issues} 个问题</strong> / <strong>${sugg} 条建议</strong>\n📊 发现 ${issues} 个问题，${sugg} 条建议。代码质量良好，逻辑清晰。\n\n🔗 <strong>PR 链接</strong>：<a href="${prUrl}" target="_blank">Pull Request</a>\n\n请你 Review 代码，确认没问题后审批 👇`,
+    btnApprovePR:"✅ 代码没问题，审批通过", btnRequestChanges:"💬 需要修改",
+    deployStart:"✅ PR 已审批！开始创建测试环境并部署...",
+    creatingTestEnv:"🚀 正在创建独立测试环境...",
+    testEnvReady:(url)=>`✅ 测试环境已就绪：${url}`,
+    testNotified:(url)=>`📬 已通知 <strong>小B（Tester）</strong> 开始测试任务。\n\n🌐 测试环境：<a href="${url}" target="_blank">${url}</a>\n📋 测试用例已准备好，等待小B审批。`,
+    bobTaskArrived:(title,url)=>`📋 新测试任务：<strong>${title}</strong>\n\n测试环境已就绪，请 Review 测试用例后批准开始测试。\n\n🌐 测试环境：<a href="${url}" target="_blank">${url}</a>`,
+    btnApproveTest:"✅ 审批，开始测试",
+    bobApproved:"✅ 审批，开始测试",
+    testingStart:"🧪 开始执行自动化测试...",
+    testStep:["初始化测试环境...","执行 UI 测试套件...","执行 API 集成测试...","执行性能测试...","生成测试报告..."],
+    testDone:(p,t,cov,dur)=>`✅ <strong>测试全部通过！</strong>\n\n📊 通过：${p}/${t} | 失败：0 | 覆盖率：${cov}\n⏱ 耗时：${dur}\n\n代码质量优秀，可以发布！ 🎉`,
+    testPassedNotify:(p,t,cov)=>`✅ 测试全部通过！\n\n📊 ${p}/${t} 通过 | 覆盖率 ${cov}\n\n已通知 <strong>小C（Release）</strong> 准备发布。`,
+    carolTaskArrived:(title)=>`🚀 发布任务：<strong>${title}</strong>\n\n测试已全部通过。本次发布需要 <strong>人工手动部署</strong>。\n\n请按照发布流程操作，准备好后点击开始。`,
+    btnStartDeploy:"🚀 开始人工发布",
+    carolStartDeploy:"🚀 开始人工发布",
+    deployInProgress:(id)=>`⚙️ ${id} 人工发布进行中...`,
+    deployGuide:`请按发布规范操作：\n\n1. <code>git pull origin main</code>\n2. 执行 <code>./scripts/deploy.sh production</code>\n3. 检查 <code>/health</code> 健康状态\n4. 观察错误率 5 分钟\n\n完成后点击下方按钮关闭任务。`,
+    btnDeployDone:"✅ 发布完成，关闭任务",
+    carolDeployDone:"✅ 人工发布完成",
+    releaseConfirmed:(ver,id)=>`🎉 <strong>人工发布已确认完成！</strong>\n\n📦 版本号：<strong>${ver}</strong>\n🌐 生产地址：<a href="https://app.example.com" target="_blank">app.example.com</a>\n\n✅ 任务 <strong>${id}</strong> 已 <strong>关闭</strong>。辛苦了！`,
+    releaseDone:(id,ver)=>`🎉 <strong>${id} 发布成功！</strong>\n\n小C 完成了人工部署。\n\n📦 版本：<strong>${ver}</strong>\n🌐 <a href="https://app.example.com" target="_blank">app.example.com</a>\n\n✅ 完整研发流程已完成！`,
+    testTaskLabel:"🧪 测试任务", releaseTaskLabel:"🚀 发布任务",
+    pending:"⏳ 待处理", inProgress:"⚙️ 进行中", done:"✅ 已发布",
+    infoTicket:"Ticket", infoStatus:"状态", infoStage:"当前阶段", infoBranch:"分支",
+    infoSpec:"Spec 文档", infoPR:"Pull Request", infoTestEnv:"测试环境", infoVersion:"版本",
+    statusPendingTest:"待测试审批", statusPendingRelease:"待人工发布",
+    statusReleasing:"人工发布中",
+  }
+};
+
+function t(key, ...args) {
+  const val = T[lang][key];
+  return typeof val === "function" ? val(...args) : val;
+}
+
+// ── Tickets data ──────────────────────────────────────────────────────────────
 const TICKETS = [
-  { id:"PROJ-101", title:"用户登录页面优化", desc:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能", priority:"High", est:"3d" },
-  { id:"PROJ-102", title:"支付接口集成", desc:"集成 Stripe 支付网关，支持信用卡和 Apple Pay", priority:"High", est:"5d" },
-  { id:"PROJ-103", title:"报表导出功能", desc:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围", priority:"Medium", est:"2d" },
-  { id:"PROJ-104", title:"推送通知系统", desc:"集成 Firebase FCM，实现订单状态推送通知", priority:"Medium", est:"4d" },
+  { id:"PROJ-101", titleEn:"Login Page Redesign",    titleZh:"用户登录页面优化",  descEn:"Redesign login UI with phone+OTP support and remember me",   descZh:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能", priority:"High", est:"3d" },
+  { id:"PROJ-102", titleEn:"Payment Gateway",        titleZh:"支付接口集成",       descEn:"Integrate Stripe payment gateway with credit card & Apple Pay", descZh:"集成 Stripe 支付网关，支持信用卡和 Apple Pay", priority:"High", est:"5d" },
+  { id:"PROJ-103", titleEn:"Report Export Feature",  titleZh:"报表导出功能",       descEn:"Support Excel/PDF export for sales reports with date filters",  descZh:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围", priority:"Medium", est:"2d" },
+  { id:"PROJ-104", titleEn:"Push Notification System",titleZh:"推送通知系统",      descEn:"Integrate Firebase FCM for order status push notifications",    descZh:"集成 Firebase FCM，实现订单状态推送通知", priority:"Medium", est:"4d" },
 ];
-const STEPS = [
-  {n:1,l:"打开 Bot，查看 Jira"},{n:2,l:"选择任务"},{n:3,l:"生成技术规范 Spec"},
-  {n:4,l:"Dev 审批，下令开发"},{n:5,l:"并行任务"},{n:6,l:"Bot 自动 Code Review"},
-  {n:7,l:"Dev 审批 PR"},{n:8,l:"部署测试环境 & 通知小B"},{n:9,l:"小B 审批，开始测试"},
-  {n:10,l:"测试完成，通知小B"},{n:11,l:"触发发布，通知小C"},{n:12,l:"小C 发布到生产"},
-];
+function ticketTitle(t2) { return lang==="en" ? t2.titleEn : t2.titleZh; }
+function ticketDesc(t2)  { return lang==="en" ? t2.descEn  : t2.descZh; }
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentPerson = "a";
@@ -238,343 +388,344 @@ const ps = {
 };
 const badges = {a:0,b:0,c:0};
 
-// ── Init ─────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", () => {
   renderTicketList();
   renderSteps("a", 0);
-  delay(600).then(() => botMsg("a","__a__",
-    `早上好！👋 你今天有 <strong>${TICKETS.length} 个</strong> Jira 任务：\n\n${
-      TICKETS.map(t=>`• <strong>${t.id}</strong> [${t.priority}] ${t.title} (${t.est})`).join("\n")
-    }\n\n要开始开发哪个？`
-  ));
+  delay(600).then(() => {
+    const ticketLines = TICKETS.map(tk=>`• <strong>${tk.id}</strong> [${tk.priority}] ${ticketTitle(tk)} (${tk.est})`).join("\n");
+    botMsg("a","__a__", t("greeting", TICKETS.length, ticketLines));
+  });
 });
+
+// ── Language toggle ───────────────────────────────────────────────────────────
+function toggleLang() {
+  lang = lang==="en" ? "zh" : "en";
+  applyLang();
+}
+
+function applyLang() {
+  document.getElementById("lang-toggle").textContent = t("langToggle");
+  document.getElementById("header-sub").textContent = t("headerSub");
+  document.getElementById("name-a").textContent = t("nameA");
+  document.getElementById("role-a").textContent = t("roleA");
+  document.getElementById("name-b").textContent = t("nameB");
+  document.getElementById("role-b").textContent = t("roleB");
+  document.getElementById("name-c").textContent = t("nameC");
+  document.getElementById("role-c").textContent = t("roleC");
+  ["a","b","c"].forEach(p=>{
+    const st = document.getElementById(`sidebar-title-${p}`);
+    if(st) st.textContent = t(`sidebar${p.toUpperCase()}`);
+    const ph = document.getElementById(`panel-hint-${p}`);
+    if(ph) ph.textContent = t(`panelHint${p.toUpperCase()}`);
+    const pt = document.getElementById(`panel-title-${p}`);
+    if(pt) pt.textContent = t(`panelTitle${p.toUpperCase()}`);
+    const ct = document.getElementById(`chat-title-${p}`);
+    if(ct) ct.textContent = t(`chatTitle${p.toUpperCase()}`);
+    const cs = document.getElementById(`chat-subtitle-${p}`);
+    if(cs) cs.textContent = t(`chatSub${p.toUpperCase()}`);
+    const mt = document.getElementById(`main-tab-${p}`);
+    if(mt) mt.textContent = t("mainTab");
+  });
+  // Empty states
+  const eb = document.getElementById("empty-b");
+  if(eb) eb.innerHTML=`${t("emptyB")}<br><span>${t("emptyBSub")}</span>`;
+  const ec = document.getElementById("empty-c");
+  if(ec) ec.innerHTML=`${t("emptyC")}<br><span>${t("emptyCSub")}</span>`;
+  const ecb = document.getElementById("empty-chat-b-text");
+  if(ecb) ecb.innerHTML=t("emptyChatB").replace("\n","<br>");
+  const ecc = document.getElementById("empty-chat-c-text");
+  if(ecc) ecc.innerHTML=t("emptyChatC").replace("\n","<br>");
+  // Re-render tickets
+  renderTicketList();
+  renderSteps("a", ps.a.wf[ps.a.tid]?.step||0);
+}
 
 // ── Person switch ─────────────────────────────────────────────────────────────
 function switchPerson(p) {
   currentPerson = p;
-  document.querySelectorAll(".person-tab").forEach(t => t.classList.toggle("active", t.dataset.person===p));
-  document.querySelectorAll(".person-panel").forEach(el => el.classList.toggle("active", el.id===`panel-${p}`));
+  document.querySelectorAll(".person-tab").forEach(t2=>t2.classList.toggle("active",t2.dataset.person===p));
+  document.querySelectorAll(".person-panel").forEach(el=>el.classList.toggle("active",el.id===`panel-${p}`));
   clearBadge(p);
-  // Re-render current thread
   const tid = ps[p].tid;
-  const thread = ps[p].threads[tid] || [];
+  const thread = ps[p].threads[tid]||[];
   const box = document.getElementById(`messages-${p}`);
-  if (box && thread.length > 0) {
-    box.innerHTML = "";
-    thread.forEach(m => renderMsgEl(p, m));
-    scrollBot(p);
-  }
+  if(box && thread.length>0){ box.innerHTML=""; thread.forEach(m=>renderMsgEl(p,m)); scrollBot(p); }
   syncTabs(p);
 }
 
-// ── Chat tab switch ───────────────────────────────────────────────────────────
+// ── Chat tab ──────────────────────────────────────────────────────────────────
 function switchTab(p, tid) {
   ps[p].tid = tid;
   syncTabs(p);
-  const box = document.getElementById(`messages-${p}`);
-  if (!box) return;
-  box.innerHTML = "";
-  (ps[p].threads[tid]||[]).forEach(m => renderMsgEl(p, m));
+  const box=document.getElementById(`messages-${p}`);
+  if(!box) return;
+  box.innerHTML="";
+  (ps[p].threads[tid]||[]).forEach(m=>renderMsgEl(p,m));
   scrollBot(p);
-  if (p==="a") {
-    const wf = ps.a.wf[tid];
-    renderSteps("a", wf?.step||0);
-    renderInfoA(tid);
-  }
+  if(p==="a"){ renderSteps("a",ps.a.wf[tid]?.step||0); renderInfoA(tid); }
 }
 
 function syncTabs(p) {
-  const tid = ps[p].tid;
-  document.querySelectorAll(`#chat-tabs-${p} .chat-tab`).forEach(t => {
-    t.classList.toggle("active", t.dataset.tid===tid);
-    if (t.dataset.tid===tid) t.classList.remove("notify");
+  const tid=ps[p].tid;
+  document.querySelectorAll(`#chat-tabs-${p} .chat-tab`).forEach(t2=>{
+    t2.classList.toggle("active",t2.dataset.tid===tid);
+    if(t2.dataset.tid===tid) t2.classList.remove("notify");
   });
 }
 
 function addTabFor(p, tid, label) {
-  const c = document.getElementById(`chat-tabs-${p}`);
-  if (!c || c.querySelector(`[data-tid="${tid}"]`)) return;
-  const btn = document.createElement("button");
+  const c=document.getElementById(`chat-tabs-${p}`);
+  if(!c||c.querySelector(`[data-tid="${tid}"]`)) return;
+  const btn=document.createElement("button");
   btn.className="chat-tab"; btn.dataset.tid=tid; btn.textContent=label;
-  btn.onclick=()=>switchTab(p,tid);
-  c.appendChild(btn);
+  btn.onclick=()=>switchTab(p,tid); c.appendChild(btn);
 }
 
-// ── Ticket list (小A) ─────────────────────────────────────────────────────────
+// ── Ticket list ───────────────────────────────────────────────────────────────
 function renderTicketList() {
-  const list = document.getElementById("ticket-list-a");
-  TICKETS.forEach(t => {
-    const card = document.createElement("div");
-    card.className="ticket-card"; card.dataset.tid=t.id; card.onclick=()=>selectTicket(t.id);
-    const pc = t.priority==="High"?"badge-high":"badge-medium";
-    card.innerHTML=`<div class="ticket-id">${t.id}</div>
-      <div class="ticket-title-text">${t.title}</div>
-      <div class="ticket-meta"><span class="badge ${pc}">${t.priority}</span><span class="badge badge-est">${t.est}</span></div>
-      <div class="ticket-state-label" id="state-${t.id}">待处理</div>
-      <div class="step-bar"><div class="step-fill" id="bar-${t.id}" style="width:0%"></div></div>`;
+  const list=document.getElementById("ticket-list-a"); if(!list) return;
+  list.innerHTML="";
+  TICKETS.forEach(tk=>{
+    const card=document.createElement("div");
+    card.className="ticket-card"; card.dataset.tid=tk.id; card.onclick=()=>selectTicket(tk.id);
+    const pc=tk.priority==="High"?"badge-high":"badge-medium";
+    const wf=ps.a.wf[tk.id];
+    card.innerHTML=`<div class="ticket-id">${tk.id}</div>
+      <div class="ticket-title-text">${ticketTitle(tk)}</div>
+      <div class="ticket-meta"><span class="badge ${pc}">${tk.priority}</span><span class="badge badge-est">${tk.est}</span></div>
+      <div class="ticket-state-label" id="state-${tk.id}">${wf?.stateLabel||""}</div>
+      <div class="step-bar"><div class="step-fill" id="bar-${tk.id}" style="width:${wf?Math.round((wf.step/12)*100):0}%"></div></div>`;
     list.appendChild(card);
   });
 }
 
 function updateCard(tid) {
-  const wf = ps.a.wf[tid];
-  if (!wf) return;
-  const el = document.getElementById(`state-${tid}`);
-  const bar = document.getElementById(`bar-${tid}`);
-  if (el) el.textContent = wf.stateLabel||"";
-  if (bar) bar.style.width = Math.round((wf.step/12)*100)+"%";
+  const wf=ps.a.wf[tid]; if(!wf) return;
+  const el=document.getElementById(`state-${tid}`); const bar=document.getElementById(`bar-${tid}`);
+  if(el) el.textContent=wf.stateLabel||"";
+  if(bar) bar.style.width=Math.round((wf.step/12)*100)+"%";
 }
 
-// ── 小A workflow ──────────────────────────────────────────────────────────────
+// ── Workflow ──────────────────────────────────────────────────────────────────
 async function selectTicket(tid) {
-  const ticket = TICKETS.find(t=>t.id===tid);
-  if (!ticket) return;
-  if (!ps.a.threads[tid]) ps.a.threads[tid]=[];
-  addTabFor("a", tid, tid);
-  switchTab("a", tid);
+  const tk=TICKETS.find(x=>x.id===tid); if(!tk) return;
+  if(!ps.a.threads[tid]) ps.a.threads[tid]=[];
+  addTabFor("a",tid,tid); switchTab("a",tid);
   document.querySelectorAll(".ticket-card").forEach(c=>c.classList.toggle("active",c.dataset.tid===tid));
-
-  const wf = ps.a.wf[tid];
-  if (wf) {
-    // Already started - show current state card
-    const actions = actionsFor(wf.state, tid);
-    appendAndRender("a", tid, {role:"bot", text:
-      `📋 <strong>${ticket.id}</strong> — ${ticket.title}\n\n需求描述：${ticket.desc}\n⏱ 预估工时：${ticket.est}\n\n当前进度：<strong>${wf.stateLabel}</strong>`,
-      actions});
+  const wf=ps.a.wf[tid];
+  if(wf){
+    const actions=actionsFor(wf.state,tid);
+    appendAndRender("a",tid,{role:"bot",text:t("alreadyStarted",tid,ticketTitle(tk),tk.est,wf.stateLabel),actions});
   } else {
-    // New ticket
-    ps.a.wf[tid] = {state:"idle", step:0, stateLabel:"待确认", branch:null, specUrl:null, prUrl:null, testUrl:null};
+    ps.a.wf[tid]={state:"idle",step:0,stateLabel:"",branch:null,specUrl:null,prUrl:null,testUrl:null};
     updateCard(tid);
-    await typing("a", 800);
-    appendAndRender("a", tid, {role:"bot",
-      text:`收到 <strong>${ticket.id}</strong> — ${ticket.title}\n\n📋 需求描述：${ticket.desc}\n⏱ 预估工时：${ticket.est}\n\n要开始做吗？我可以先生成技术规范文档。`,
+    await typing("a",800);
+    appendAndRender("a",tid,{role:"bot",text:t("ticketCard",tid,ticketTitle(tk),ticketDesc(tk),tk.est),
       actions:[
-        {label:"✅ 开始，先做 Spec 文档", fn:()=>runSpec(tid)},
-        {label:"⏭ 跳过，直接开始开发",   fn:()=>runDev(tid)},
-        {label:"❌ 暂不处理",             fn:()=>botMsg("a",tid,"好的，已跳过。有需要随时叫我 👍")},
+        {label:t("btnStartSpec"),fn:()=>runSpec(tid)},
+        {label:t("btnSkipSpec"),fn:()=>runDev(tid)},
+        {label:t("btnSkip"),fn:()=>botMsg("a",tid,t("skipped"))},
       ]});
-    setWf(tid, "waiting_start", 1, "Step 1: 待确认");
+    setWf(tid,"waiting_start",1,"Step 1");
   }
 }
 
 async function runSpec(tid) {
-  const ticket = TICKETS.find(t=>t.id===tid);
-  setWf(tid,"generating_spec",3,"Step 3: 生成规范中");
-  await typing("a",600);
-  appendAndRender("a",tid,{role:"bot",text:"好的！我来拉代码分支并生成技术规范文档..."});
-  await delay(1200);
-  sysEvent("a",tid,"⚙️ 正在创建 Git 分支...");
-  await delay(1500);
-  const slug = ticket.id.toLowerCase();
-  const branch = `feature/${slug}-${ticket.title.replace(/\s+/g,"-").toLowerCase().slice(0,20)}`;
-  ps.a.wf[tid].branch = branch;
-  sysEvent("a",tid,`✅ 分支已创建：\`${branch}\``);
-  await delay(800);
-  sysEvent("a",tid,"📝 正在生成技术规范文档（Spec）...");
-  await delay(3000);
-  const specNum = Math.floor(Math.random()*9000+1000);
-  const specUrl = `https://github.com/org/repo/blob/feature/${slug}/docs/SPEC-${specNum}.md`;
-  ps.a.wf[tid].specUrl = specUrl;
-  setWf(tid,"waiting_spec",3,"Step 3: 待Review规范");
+  const tk=TICKETS.find(x=>x.id===tid);
+  setWf(tid,"generating_spec",3,"Step 3");
+  await typing("a",500); appendAndRender("a",tid,{role:"bot",text:t("specStart")});
+  await delay(1200); sysEvent("a",tid,t("creatingBranch")); await delay(1500);
+  const branch=`feature/${tid.toLowerCase()}-${ticketTitle(tk).toLowerCase().replace(/\s+/g,"-").replace(/[^\w-]/g,"").slice(0,18)}`;
+  ps.a.wf[tid].branch=branch; sysEvent("a",tid,t("branchCreated",branch));
+  await delay(800); sysEvent("a",tid,t("generatingSpec")); await delay(3000);
+  const specNum=Math.floor(Math.random()*9000+1000);
+  const specUrl=`https://github.com/org/repo/blob/feature/${tid.toLowerCase()}/docs/SPEC-${specNum}.md`;
+  ps.a.wf[tid].specUrl=specUrl;
+  setWf(tid,"waiting_spec",3,"Step 3");
   await typing("a",1000);
-  appendAndRender("a",tid,{role:"bot",
-    text:`✅ 技术规范文档已生成！\n\n📄 <strong>Spec 文档</strong>：<a href="${specUrl}" target="_blank">点击查看</a>\n🌿 <strong>开发分支</strong>：<code>${branch}</code>\n\n主要内容包括：技术选型、接口设计、数据模型、测试策略。\n\n请 Review 后告诉我是否可以开始开发 👇`,
-    actions:[
-      {label:"✅ Spec 没问题，开始开发", fn:()=>runDev(tid)},
-      {label:"✏️ 需要修改 Spec",         fn:()=>runSpec(tid)},
-    ]});
+  appendAndRender("a",tid,{role:"bot",text:t("specDone",specUrl,branch),
+    actions:[{label:t("btnApproveSpec"),fn:()=>runDev(tid)},{label:t("btnReviseSpec"),fn:()=>runSpec(tid)}]});
   renderInfoA(tid);
 }
 
 async function runDev(tid) {
-  const otherTickets = TICKETS.filter(t=>t.id!==tid);
-  setWf(tid,"developing",5,"Step 4-5: 开发中");
-  await typing("a",500);
-  appendAndRender("a",tid,{role:"bot",text:"🚀 开始开发！我会在完成后通知你。"});
-  if (otherTickets.length) {
+  const others=TICKETS.filter(x=>x.id!==tid);
+  setWf(tid,"developing",5,"Step 4-5");
+  await typing("a",500); appendAndRender("a",tid,{role:"bot",text:t("devStart")});
+  if(others.length){
     await delay(1200);
-    appendAndRender("a",tid,{role:"bot",
-      text:`💡 提示：开发期间你可以同时处理其他任务，比如 <strong>${otherTickets[0].id}</strong> — ${otherTickets[0].title}`,
-      actions:[{label:`开始处理 ${otherTickets[0].id}`, fn:()=>selectTicket(otherTickets[0].id)}]});
+    appendAndRender("a",tid,{role:"bot",text:t("parallelHint",others[0].id,ticketTitle(others[0])),
+      actions:[{label:t("btnParallel",others[0].id),fn:()=>selectTicket(others[0].id)}]});
   }
-  const devSteps = ["分析需求文档...","搭建基础框架...","实现核心逻辑...","编写单元测试...","代码格式化 & Lint 检查..."];
-  for (const s of devSteps) { await delay(1200); sysEvent("a",tid,`⚙️ ${s}`); }
-  // Code review
-  setWf(tid,"code_review",6,"Step 6: Bot Code Review");
-  sysEvent("a",tid,"🔍 Bot 正在执行第一轮 Code Review...");
-  await delay(3000);
-  const issues = Math.floor(Math.random()*3);
-  const sugg = Math.floor(Math.random()*4)+2;
-  const prNum = Math.floor(Math.random()*900+100);
-  const prUrl = `https://github.com/org/repo/pull/${prNum}`;
-  ps.a.wf[tid].prUrl = prUrl;
-  setWf(tid,"waiting_pr",7,"Step 7: 待Review PR");
+  for(const s of t("devStep")){ await delay(1200); sysEvent("a",tid,`⚙️ ${s}`); }
+  setWf(tid,"code_review",6,"Step 6");
+  sysEvent("a",tid,t("reviewingCode")); await delay(3000);
+  const issues=Math.floor(Math.random()*3), sugg=Math.floor(Math.random()*4)+2;
+  const prUrl=`https://github.com/org/repo/pull/${Math.floor(Math.random()*900+100)}`;
+  ps.a.wf[tid].prUrl=prUrl; setWf(tid,"waiting_pr",7,"Step 7");
   await typing("a",1200);
-  appendAndRender("a",tid,{role:"bot",
-    text:`🎉 代码开发完成！已完成第一轮自动 Code Review：\n\n${issues>0?"⚠️":"✅"} <strong>${issues} 个问题</strong> / <strong>${sugg} 条建议</strong>\n📊 发现 ${issues} 个问题，${sugg} 条建议。代码质量良好，逻辑清晰。\n\n🔗 <strong>PR 链接</strong>：<a href="${prUrl}" target="_blank">Pull Request</a>\n\n请你 Review 代码，确认没问题后审批 👇`,
-    actions:[
-      {label:"✅ 代码没问题，审批通过", fn:()=>runDeploy(tid)},
-      {label:"💬 需要修改",             fn:()=>botMsg("a",tid,"好的，请在 PR 中提交修改意见，我稍后处理。")},
-    ]});
+  appendAndRender("a",tid,{role:"bot",text:t("devDone",issues,sugg,prUrl),
+    actions:[{label:t("btnApprovePR"),fn:()=>runDeploy(tid)},{label:t("btnRequestChanges"),fn:()=>botMsg("a",tid,"Got it, please add comments in the PR.")}]});
   renderInfoA(tid);
 }
 
 async function runDeploy(tid) {
-  setWf(tid,"deploying",8,"Step 8: 部署测试环境");
-  await typing("a",500);
-  appendAndRender("a",tid,{role:"bot",text:"✅ PR 已审批！开始创建测试环境并部署..."});
-  sysEvent("a",tid,"🚀 正在创建独立测试环境...");
-  await delay(3000);
-  const envId = tid.toLowerCase().replace("-","");
-  const testUrl = `https://test-${envId}.staging.example.com`;
-  ps.a.wf[tid].testUrl = testUrl;
-  sysEvent("a",tid,`✅ 测试环境已就绪：${testUrl}`);
-  setWf(tid,"waiting_test",9,"Step 9: 待小B审批");
+  const tk=TICKETS.find(x=>x.id===tid);
+  setWf(tid,"deploying",8,"Step 8");
+  await typing("a",500); appendAndRender("a",tid,{role:"bot",text:t("deployStart")});
+  sysEvent("a",tid,t("creatingTestEnv")); await delay(3000);
+  const testUrl=`https://test-${tid.toLowerCase().replace("-","")}.staging.example.com`;
+  ps.a.wf[tid].testUrl=testUrl; sysEvent("a",tid,t("testEnvReady",testUrl));
+  setWf(tid,"waiting_test",9,"Step 9");
   await typing("a",1000);
-  appendAndRender("a",tid,{role:"bot",
-    text:`📬 已通知 <strong>小B（Tester）</strong> 开始测试任务。\n\n🌐 测试环境：<a href="${testUrl}" target="_blank">${testUrl}</a>\n📋 测试用例已准备好，等待小B审批。`});
+  appendAndRender("a",tid,{role:"bot",text:t("testNotified",testUrl)});
   renderInfoA(tid);
-  // Notify 小B
-  await delay(1500);
-  notifyB(tid, testUrl);
+  await delay(1500); notifyB(tid,testUrl);
 }
 
 async function notifyB(tid, testUrl) {
-  const ticket = TICKETS.find(t=>t.id===tid);
-  const btid = `b_${tid}`;
-  if (!ps.b.threads[btid]) ps.b.threads[btid]=[];
-  ps.b.tid = btid;
-  addTabFor("b", btid, tid);
-  // Add queue card
-  addQueueCard("b", tid);
-  // Send bot message to 小B
-  const msg = {role:"bot", text:`📋 新测试任务：<strong>${ticket.title}</strong>\n\n测试环境已就绪，请 Review 测试用例后批准开始测试。\n\n🌐 测试环境：<a href="${testUrl}" target="_blank">${testUrl}</a>`,
-    actions:[{label:"✅ 审批，开始测试", fn:()=>runTest(tid, btid)}]};
+  const tk=TICKETS.find(x=>x.id===tid);
+  const btid=`b_${tid}`;
+  if(!ps.b.threads[btid]) ps.b.threads[btid]=[];
+  ps.b.tid=btid; addTabFor("b",btid,tid); addQueueCard("b",tid);
+  const msg={role:"bot",text:t("bobTaskArrived",ticketTitle(tk),testUrl),
+    actions:[{label:t("btnApproveTest"),fn:()=>runTest(tid,btid)}]};
   ps.b.threads[btid].push(msg);
-  if (currentPerson==="b") { switchTab("b",btid); scrollBot("b"); }
-  else addBadge("b");
-  // Update 小B info panel
-  document.getElementById("info-b").innerHTML=`<div class="info-section"><div class="info-title">测试任务</div>
-    <div class="info-row"><div class="info-label">Ticket</div><div class="info-value">${tid} — ${ticket.title}</div></div>
-    <div class="info-row"><div class="info-label">状态</div><div class="info-value" style="color:var(--color-b)">待审批测试</div></div>
-    <div class="info-row"><div class="info-label">测试环境</div><div class="info-value"><a href="${testUrl}" target="_blank">打开 →</a></div></div>
+  if(currentPerson==="b"){ switchTab("b",btid); scrollBot("b"); } else addBadge("b");
+  document.getElementById("info-b").innerHTML=`<div class="info-section">
+    <div class="info-title">${lang==="en"?"Test Task":"测试任务"}</div>
+    <div class="info-row"><div class="info-label">${t("infoTicket")}</div><div class="info-value">${tid} — ${ticketTitle(tk)}</div></div>
+    <div class="info-row"><div class="info-label">${t("infoStatus")}</div><div class="info-value" style="color:var(--color-b)">${t("statusPendingTest")}</div></div>
+    <div class="info-row"><div class="info-label">${t("infoTestEnv")}</div><div class="info-value"><a href="${testUrl}" target="_blank">${lang==="en"?"Open →":"打开 →"}</a></div></div>
   </div>`;
 }
 
 async function runTest(tid, btid) {
-  const ticket = TICKETS.find(t=>t.id===tid);
-  // 小B user message
-  appendAndRender("b", btid, {role:"user", text:"✅ 审批，开始测试"});
-  await typingFor("b",600);
-  appendAndRender("b",btid,{role:"bot",text:"🧪 开始执行自动化测试..."});
-  // Progress events in 小B
-  const testSteps=["初始化测试环境...","执行 UI 测试套件...","执行 API 集成测试...","执行性能测试...","生成测试报告..."];
-  for (const s of testSteps) { await delay(800); sysEventFor("b",btid,`⚙️ ${s}`); }
+  const tk=TICKETS.find(x=>x.id===tid);
+  appendAndRender("b",btid,{role:"user",text:t("bobApproved")});
+  await typingFor("b",600); appendAndRender("b",btid,{role:"bot",text:t("testingStart")});
+  for(const s of t("testStep")){ await delay(800); sysEventFor("b",btid,`⚙️ ${s}`); }
   await delay(1000);
-  const total=Math.floor(Math.random()*30+20), failed=0, passed=total;
-  const cov=Math.floor(Math.random()*14+82)+"%", dur=(Math.random()*15+8).toFixed(1)+"s";
-  // 小B gets results
-  appendAndRender("b",btid,{role:"bot",
-    text:`✅ <strong>测试全部通过！</strong>\n\n📊 通过：${passed}/${total} | 失败：${failed} | 覆盖率：${cov}\n⏱ 耗时：${dur}\n\n代码质量优秀，可以发布！`});
-  // Also notify 小A
-  setWf(tid,"waiting_release",11,"Step 11: 待小C发布");
+  const total=Math.floor(Math.random()*30+20), cov=Math.floor(Math.random()*14+82)+"%";
+  const dur=(Math.random()*15+8).toFixed(1)+"s";
+  appendAndRender("b",btid,{role:"bot",text:t("testDone",total,total,cov,dur)});
+  // Update queue card
+  const qc=document.querySelector(`#ticket-list-b [data-tid="${tid}"] .queue-status`);
+  if(qc){qc.textContent=lang==="en"?"✅ Tests passed":"✅ 测试通过"; qc.className="queue-status done";}
+  // Notify 小A
+  setWf(tid,"waiting_release",11,"Step 11");
   await typing("a",800);
-  appendAndRender("a",tid,{role:"bot",
-    text:`✅ 测试全部通过！\n\n📊 ${passed}/${total} 通过 | 覆盖率 ${cov}\n\n已通知 <strong>小C（Release）</strong> 准备发布。`});
+  appendAndRender("a",tid,{role:"bot",text:t("testPassedNotify",total,total,cov)});
   renderInfoA(tid);
-  // Notify 小C
-  await delay(1500);
-  notifyC(tid);
+  await delay(1500); notifyC(tid);
 }
 
 async function notifyC(tid) {
-  const ticket = TICKETS.find(t=>t.id===tid);
-  const ctid = `c_${tid}`;
-  if (!ps.c.threads[ctid]) ps.c.threads[ctid]=[];
-  ps.c.tid = ctid;
-  addTabFor("c", ctid, tid);
-  addQueueCard("c", tid);
-  const msg = {role:"bot", text:`🚀 发布任务：<strong>${ticket.title}</strong>\n\n测试已全部通过，可以发布到生产环境。\n\n请确认后开始发布流程。`,
-    actions:[{label:"🚀 确认发布到生产", fn:()=>runRelease(tid, ctid)}]};
+  const tk=TICKETS.find(x=>x.id===tid);
+  const ctid=`c_${tid}`;
+  if(!ps.c.threads[ctid]) ps.c.threads[ctid]=[];
+  ps.c.tid=ctid; addTabFor("c",ctid,tid); addQueueCard("c",tid);
+  const msg={role:"bot",text:t("carolTaskArrived",ticketTitle(tk)),
+    actions:[{label:t("btnStartDeploy"),fn:()=>startManualDeploy(tid,ctid)}]};
   ps.c.threads[ctid].push(msg);
-  if (currentPerson==="c") { switchTab("c",ctid); scrollBot("c"); }
-  else addBadge("c");
-  document.getElementById("info-c").innerHTML=`<div class="info-section"><div class="info-title">发布任务</div>
-    <div class="info-row"><div class="info-label">Ticket</div><div class="info-value">${tid} — ${ticket.title}</div></div>
-    <div class="info-row"><div class="info-label">状态</div><div class="info-value" style="color:var(--color-c)">待确认发布</div></div>
+  if(currentPerson==="c"){ switchTab("c",ctid); scrollBot("c"); } else addBadge("c");
+  document.getElementById("info-c").innerHTML=`<div class="info-section">
+    <div class="info-title">${lang==="en"?"Release Task":"发布任务"}</div>
+    <div class="info-row"><div class="info-label">${t("infoTicket")}</div><div class="info-value">${tid} — ${ticketTitle(tk)}</div></div>
+    <div class="info-row"><div class="info-label">${t("infoStatus")}</div><div class="info-value" style="color:var(--color-c)">${t("statusPendingRelease")}</div></div>
   </div>`;
 }
 
-async function runRelease(tid, ctid) {
-  appendAndRender("c",ctid,{role:"user",text:"🚀 确认发布到生产"});
-  await typingFor("c",500);
-  appendAndRender("c",ctid,{role:"bot",text:"🚀 开始生产发布..."});
-  const relSteps=["创建发布包...","备份当前版本...","蓝绿切换流量...","健康检查...","更新 CDN 缓存..."];
-  for (const s of relSteps) { await delay(700); sysEventFor("c",ctid,`⚙️ ${s}`); }
-  const ver=`v1.${Math.floor(Math.random()*9+1)}.${Math.floor(Math.random()*20)}`;
-  await delay(1000);
+// ── Manual release (人工发布) ──────────────────────────────────────────────────
+async function startManualDeploy(tid, ctid) {
+  appendAndRender("c",ctid,{role:"user",text:t("carolStartDeploy")});
+  sysEventFor("c",ctid,t("deployInProgress",tid));
+  setWf(tid,"releasing",12,"Step 12");
+  updateCard(tid);
+  // Update queue card status
+  const qc=document.querySelector(`#ticket-list-c [data-tid="${tid}"] .queue-status`);
+  if(qc){qc.textContent=t("inProgress"); qc.className="queue-status in-progress";}
+  // Update Carol info panel status
+  const infoC=document.getElementById("info-c");
+  const statusEl=infoC?.querySelector(".info-value[style]");
+  if(statusEl) statusEl.textContent=t("statusReleasing");
+  await typingFor("c",800);
+  // Show deployment guide + manual confirm button
   appendAndRender("c",ctid,{role:"bot",
-    text:`🎉 <strong>发布成功！</strong>\n\n📦 版本号：<strong>${ver}</strong>\n🌐 生产地址：<a href="https://app.example.com" target="_blank">app.example.com</a>`});
-  // Notify 小A - done!
-  setWf(tid,"done",12,"✅ 完成");
+    text:t("deployGuide"),
+    actions:[{label:t("btnDeployDone"),fn:()=>confirmManualRelease(tid,ctid),danger:true}]});
+}
+
+async function confirmManualRelease(tid, ctid) {
+  const tk=TICKETS.find(x=>x.id===tid);
+  appendAndRender("c",ctid,{role:"user",text:t("carolDeployDone")});
+  const ver=`v1.${Math.floor(Math.random()*9+1)}.${Math.floor(Math.random()*20)}`;
+  await typingFor("c",1000);
+  appendAndRender("c",ctid,{role:"bot",text:t("releaseConfirmed",ver,tid)});
+  // Update queue card
+  const qc=document.querySelector(`#ticket-list-c [data-tid="${tid}"] .queue-status`);
+  if(qc){qc.textContent=t("done"); qc.className="queue-status done";}
+  // Update Carol info panel
+  document.getElementById("info-c").innerHTML=`<div class="info-section">
+    <div class="info-title">${lang==="en"?"Release Complete":"发布完成"}</div>
+    <div class="info-row"><div class="info-label">${t("infoTicket")}</div><div class="info-value">${tid} — ${ticketTitle(tk)}</div></div>
+    <div class="info-row"><div class="info-label">${t("infoStatus")}</div><div class="info-value" style="color:var(--done)">✅ ${lang==="en"?"CLOSED":"已关闭"}</div></div>
+    <div class="info-row"><div class="info-label">${t("infoVersion")}</div><div class="info-value">${ver}</div></div>
+  </div>`;
+  // Notify Alex
+  setWf(tid,"done",12,"✅ Done");
   await typing("a",800);
-  appendAndRender("a",tid,{role:"bot",
-    text:`🎉 <strong>${tid} 发布成功！</strong>\n\n📦 版本：<strong>${ver}</strong>\n🌐 生产：<a href="https://app.example.com" target="_blank">app.example.com</a>\n\n整个研发流程已完成 ✅`});
+  appendAndRender("a",tid,{role:"bot",text:t("releaseDone",tid,ver)});
   renderInfoA(tid);
-  // Update 小C queue card
-  const qc = document.querySelector(`#ticket-list-c [data-tid="${tid}"] .queue-status`);
-  if (qc) { qc.textContent="✅ 已发布"; qc.className="queue-status done"; }
 }
 
 // ── Queue cards ───────────────────────────────────────────────────────────────
-function addQueueCard(person, tid) {
-  const list = document.getElementById(`ticket-list-${person}`);
-  if (!list || list.querySelector(`[data-tid="${tid}"]`)) return;
+function addQueueCard(person,tid) {
+  const list=document.getElementById(`ticket-list-${person}`); if(!list) return;
+  if(list.querySelector(`[data-tid="${tid}"]`)) return;
   list.querySelector(".empty-queue")?.remove();
-  const ticket = TICKETS.find(t=>t.id===tid);
-  const ptid = `${person}_${tid}`;
-  const card = document.createElement("div");
-  card.className="queue-card new"; card.dataset.tid=tid;
-  card.onclick=()=>switchTab(person, ptid);
+  const tk=TICKETS.find(x=>x.id===tid);
+  const ptid=`${person}_${tid}`;
+  const card=document.createElement("div");
+  card.className="queue-card new"; card.dataset.tid=tid; card.onclick=()=>switchTab(person,ptid);
+  const label=person==="b"?t("testTaskLabel"):t("releaseTaskLabel");
   card.innerHTML=`<div class="queue-title">${tid}</div>
-    <div class="queue-sub">${ticket?.title||""}</div>
-    <div class="queue-status pending" id="qstatus-${person}-${tid}">⏳ 待处理</div>`;
+    <div class="queue-sub">${ticketTitle(tk)||""}</div>
+    <div class="queue-status pending">${t("pending")}</div>`;
   list.appendChild(card);
 }
 
 // ── Workflow state ────────────────────────────────────────────────────────────
-function setWf(tid, state, step, label) {
-  if (!ps.a.wf[tid]) ps.a.wf[tid]={};
+function setWf(tid,state,step,label){
+  if(!ps.a.wf[tid]) ps.a.wf[tid]={};
   ps.a.wf[tid].state=state; ps.a.wf[tid].step=step; ps.a.wf[tid].stateLabel=label;
   updateCard(tid);
-  if (ps.a.tid===tid) renderSteps("a",step);
+  if(ps.a.tid===tid) renderSteps("a",step);
 }
 
 function actionsFor(state, tid) {
-  const m = {
-    waiting_start:[{label:"✅ 开始，先做 Spec 文档",fn:()=>runSpec(tid)},{label:"⏭ 跳过，直接开发",fn:()=>runDev(tid)}],
-    waiting_spec:[{label:"✅ Spec 没问题，开始开发",fn:()=>runDev(tid)},{label:"✏️ 需要修改",fn:()=>runSpec(tid)}],
-    waiting_pr:[{label:"✅ 代码没问题，审批通过",fn:()=>runDeploy(tid)}],
+  const m={
+    waiting_start:[{label:t("btnStartSpec"),fn:()=>runSpec(tid)},{label:t("btnSkipSpec"),fn:()=>runDev(tid)}],
+    waiting_spec:[{label:t("btnApproveSpec"),fn:()=>runDev(tid)},{label:t("btnReviseSpec"),fn:()=>runSpec(tid)}],
+    waiting_pr:[{label:t("btnApprovePR"),fn:()=>runDeploy(tid)}],
   };
   return m[state]||[];
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function botMsg(p, tid, text, actions) {
-  appendAndRender(p, tid, {role:"bot", text, actions});
-}
+function botMsg(p,tid,text,actions){ appendAndRender(p,tid,{role:"bot",text,actions}); }
 
-function appendAndRender(p, tid, msg) {
-  if (!ps[p].threads[tid]) ps[p].threads[tid]=[];
+function appendAndRender(p,tid,msg){
+  if(!ps[p].threads[tid]) ps[p].threads[tid]=[];
   ps[p].threads[tid].push(msg);
-  if (currentPerson===p && ps[p].tid===tid) { renderMsgEl(p, msg); scrollBot(p); }
+  if(currentPerson===p && ps[p].tid===tid){ renderMsgEl(p,msg); scrollBot(p); }
 }
 
-function renderMsgEl(p, msg) {
-  const box = document.getElementById(`messages-${p}`);
-  if (!box) return;
+function renderMsgEl(p,msg){
+  const box=document.getElementById(`messages-${p}`); if(!box) return;
   box.querySelector(".empty-state-msg")?.remove();
-  if (msg.system) {
+  if(msg.system){
     const el=document.createElement("div"); el.className="system-event"; el.textContent=msg.text; box.appendChild(el); return;
   }
   const row=document.createElement("div"); row.className=`msg-row ${msg.role||"bot"}`;
@@ -583,10 +734,12 @@ function renderMsgEl(p, msg) {
   const ct=document.createElement("div"); ct.className="msg-content";
   const bbl=document.createElement("div"); bbl.className=`bubble ${msg.role||"bot"}`;
   bbl.innerHTML=mdLight(msg.text||""); ct.appendChild(bbl);
-  if (msg.actions?.length) {
+  if(msg.actions?.length){
     const btns=document.createElement("div"); btns.className="action-buttons";
     msg.actions.forEach(a=>{
-      const btn=document.createElement("button"); btn.className="action-btn"; btn.textContent=a.label;
+      const btn=document.createElement("button");
+      btn.className="action-btn"+(a.danger?" danger":"");
+      btn.textContent=a.label;
       btn.onclick=()=>{ btn.parentElement.querySelectorAll(".action-btn").forEach(b=>b.classList.add("done")); a.fn(); };
       btns.appendChild(btn);
     });
@@ -595,59 +748,51 @@ function renderMsgEl(p, msg) {
   row.appendChild(av); row.appendChild(ct); box.appendChild(row);
 }
 
-function sysEvent(p, tid, text) {
-  const msg={system:true,text}; appendAndRender(p,tid,msg);
-}
-function sysEventFor(p, tid, text) { sysEvent(p,tid,text); }
+function sysEvent(p,tid,text){ appendAndRender(p,tid,{system:true,text}); }
+function sysEventFor(p,tid,text){ sysEvent(p,tid,text); }
 
-function renderSteps(p, cur) {
+function renderSteps(p,cur){
   const list=document.getElementById(`step-list-${p}`); if(!list) return; list.innerHTML="";
-  STEPS.forEach(s=>{
-    const cls=s.n<cur?"done":s.n===cur?"active":"pending";
+  t("steps").forEach((label,i)=>{
+    const n=i+1, cls=n<cur?"done":n===cur?"active":"pending";
     const li=document.createElement("div"); li.className=`step-item ${cls}`;
-    const num=document.createElement("div"); num.className=`step-num ${cls}`; num.textContent=cls==="done"?"✓":s.n;
-    const lbl=document.createElement("span"); lbl.textContent=s.l;
+    const num=document.createElement("div"); num.className=`step-num ${cls}`; num.textContent=cls==="done"?"✓":n;
+    const lbl=document.createElement("span"); lbl.textContent=label;
     li.appendChild(num); li.appendChild(lbl); list.appendChild(li);
   });
 }
 
-function renderInfoA(tid) {
+function renderInfoA(tid){
   const panel=document.getElementById("info-a"); if(!panel) return;
-  const wf=ps.a.wf[tid]; const ticket=TICKETS.find(t=>t.id===tid);
-  if (!wf||!ticket) { panel.innerHTML=`<div class="panel-hint">点击左侧 Ticket 查看详情</div>`; return; }
-  panel.innerHTML=`<div class="info-section"><div class="info-title">任务信息</div>
-    <div class="info-row"><div class="info-label">Ticket</div><div class="info-value">${tid} — ${ticket.title}</div></div>
-    <div class="info-row"><div class="info-label">当前阶段</div><div class="info-value" style="color:var(--accent)">${wf.stateLabel||"—"}</div></div>
-    ${wf.branch?`<div class="info-row"><div class="info-label">分支</div><div class="info-value"><code>${wf.branch}</code></div></div>`:""}
-    ${wf.specUrl?`<div class="info-row"><div class="info-label">Spec</div><div class="info-value"><a href="${wf.specUrl}" target="_blank">查看 →</a></div></div>`:""}
-    ${wf.prUrl?`<div class="info-row"><div class="info-label">PR</div><div class="info-value"><a href="${wf.prUrl}" target="_blank">查看 PR →</a></div></div>`:""}
-    ${wf.testUrl?`<div class="info-row"><div class="info-label">测试环境</div><div class="info-value"><a href="${wf.testUrl}" target="_blank">${wf.testUrl}</a></div></div>`:""}
+  const wf=ps.a.wf[tid]; const tk=TICKETS.find(x=>x.id===tid);
+  if(!wf||!tk){ panel.innerHTML=`<div class="panel-hint">${t("panelHintA")}</div>`; return; }
+  panel.innerHTML=`<div class="info-section">
+    <div class="info-title">${lang==="en"?"Task Info":"任务信息"}</div>
+    <div class="info-row"><div class="info-label">${t("infoTicket")}</div><div class="info-value">${tid} — ${ticketTitle(tk)}</div></div>
+    <div class="info-row"><div class="info-label">${t("infoStage")}</div><div class="info-value" style="color:var(--accent)">${wf.stateLabel||"—"}</div></div>
+    ${wf.branch?`<div class="info-row"><div class="info-label">${t("infoBranch")}</div><div class="info-value"><code>${wf.branch}</code></div></div>`:""}
+    ${wf.specUrl?`<div class="info-row"><div class="info-label">${t("infoSpec")}</div><div class="info-value"><a href="${wf.specUrl}" target="_blank">${lang==="en"?"View →":"查看 →"}</a></div></div>`:""}
+    ${wf.prUrl?`<div class="info-row"><div class="info-label">${t("infoPR")}</div><div class="info-value"><a href="${wf.prUrl}" target="_blank">${lang==="en"?"View PR →":"查看 PR →"}</a></div></div>`:""}
+    ${wf.testUrl?`<div class="info-row"><div class="info-label">${t("infoTestEnv")}</div><div class="info-value"><a href="${wf.testUrl}" target="_blank">${wf.testUrl}</a></div></div>`:""}
   </div>`;
 }
 
 // ── Typing ────────────────────────────────────────────────────────────────────
-async function typing(p, ms) {
+async function typing(p,ms){
   const el=document.getElementById(`typing-${p}`);
-  if(el&&currentPerson===p&&ps[p].tid) { el.style.display="flex"; await delay(ms); el.style.display="none"; }
-  else await delay(ms);
+  if(el&&currentPerson===p){ el.style.display="flex"; await delay(ms); el.style.display="none"; } else await delay(ms);
 }
-async function typingFor(p, ms) { return typing(p, ms); }
+async function typingFor(p,ms){ return typing(p,ms); }
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
-function addBadge(p) {
-  badges[p]++; const el=document.getElementById(`badge-${p}`);
-  if(el){el.textContent=badges[p];el.style.display="inline-block";}
-}
-function clearBadge(p) {
-  badges[p]=0; const el=document.getElementById(`badge-${p}`);
-  if(el) el.style.display="none";
-}
+function addBadge(p){ badges[p]++; const el=document.getElementById(`badge-${p}`); if(el){el.textContent=badges[p];el.style.display="inline-block";} }
+function clearBadge(p){ badges[p]=0; const el=document.getElementById(`badge-${p}`); if(el) el.style.display="none"; }
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
-const delay = ms => new Promise(r=>setTimeout(r,ms));
-function scrollBot(p) { const el=document.getElementById(`messages-${p}`); if(el) el.scrollTop=el.scrollHeight; }
-function mdLight(t) {
-  return t.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+function scrollBot(p){ const el=document.getElementById(`messages-${p}`); if(el) el.scrollTop=el.scrollHeight; }
+function mdLight(text){
+  return text.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
     .replace(/`([^`]+)`/g,"<code>$1</code>")
     .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank">$1</a>')
     .replace(/\n/g,"<br>");
