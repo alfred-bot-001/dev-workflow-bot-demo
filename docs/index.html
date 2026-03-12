@@ -274,6 +274,15 @@ const T = {
     testStep:["Initializing test environment...","Running UI test suite...","Running API integration tests...","Running performance tests...","Generating test report..."],
     testDone:(p,t,cov,dur)=>`✅ <strong>All tests passed!</strong>\n\n📊 Passed: ${p}/${t} | Failed: 0 | Coverage: ${cov}\n⏱ Duration: ${dur}\n\nCode quality is excellent. Ready for production! 🎉`,
     // Alex notified of test result
+    btnReviewCases:"📋 Review Test Cases",
+    jackReviewingCases:"📋 Review Test Cases",
+    caseListIntro:(title)=>`Here are the test cases for **${title}**.\nPlease review and approve or modify:`,
+    btnModifyCases:"✏️ Modify Test Cases",
+    btnApproveCases:"✅ Approve Test Cases",
+    jackModifyCases:"✏️ I need to modify some test cases",
+    casesUpdated:"Test cases have been updated. Please review again:",
+    jackApprovedCases:"✅ Test cases look good!",
+    casesApprovedStart:"Test cases approved ✅\nReady to start execution. Click below when you're ready:",
     btnConfirmTestDone:"✅ Tests Complete — Ready for Release",
     jackConfirmedRelease:"✅ Tests Complete — Triggering release",
     jackReleaseTrigger:"Got it! Notifying Carol to proceed with deployment. 🚀",
@@ -348,6 +357,15 @@ const T = {
     testingStart:"🧪 开始执行自动化测试...",
     testStep:["初始化测试环境...","执行 UI 测试套件...","执行 API 集成测试...","执行性能测试...","生成测试报告..."],
     testDone:(p,t,cov,dur)=>`✅ <strong>测试全部通过！</strong>\n\n📊 通过：${p}/${t} | 失败：0 | 覆盖率：${cov}\n⏱ 耗时：${dur}\n\n代码质量优秀，可以发布！ 🎉`,
+    btnReviewCases:"📋 查看测试用例",
+    jackReviewingCases:"📋 查看测试用例",
+    caseListIntro:(title)=>`以下是 **${title}** 的测试用例，请 Review 后决定是否修改：`,
+    btnModifyCases:"✏️ 修改测试用例",
+    btnApproveCases:"✅ 确认用例，准备测试",
+    jackModifyCases:"✏️ 需要修改部分测试用例",
+    casesUpdated:"测试用例已更新，请重新确认：",
+    jackApprovedCases:"✅ 测试用例没问题！",
+    casesApprovedStart:"测试用例已确认 ✅\n已准备好执行，请点击下方开始测试：",
     btnConfirmTestDone:"✅ 测试完成，准备发布",
     jackConfirmedRelease:"✅ 测试完成，触发发布流程",
     jackReleaseTrigger:"好的！已通知小C（Carol）开始发布。 🚀",
@@ -596,15 +614,93 @@ async function notifyB(tid, testUrl) {
   if(!ps.b.threads[btid]) ps.b.threads[btid]=[];
   ps.b.tid=btid; addTabFor("b",btid,tid); addQueueCard("b",tid);
   const msg={role:"bot",text:t("jackTaskArrived",ticketTitle(tk),testUrl),
-    actions:[{label:t("btnApproveTest"),fn:()=>runTest(tid,btid)}]};
+    actions:[{label:t("btnReviewCases"),fn:()=>showTestCases(tid,btid,testUrl)}]};
   ps.b.threads[btid].push(msg);
   if(currentPerson==="b"){ switchTab("b",btid); scrollBot("b"); } else addBadge("b");
+  updateInfoB(tid,tk,testUrl,t("statusPendingTest"));
+}
+
+function updateInfoB(tid, tk, testUrl, statusText) {
   document.getElementById("info-b").innerHTML=`<div class="info-section">
     <div class="info-title">${lang==="en"?"Test Task":"测试任务"}</div>
     <div class="info-row"><div class="info-label">${t("infoTicket")}</div><div class="info-value">${tid} — ${ticketTitle(tk)}</div></div>
-    <div class="info-row"><div class="info-label">${t("infoStatus")}</div><div class="info-value" style="color:var(--color-b)">${t("statusPendingTest")}</div></div>
-    <div class="info-row"><div class="info-label">${t("infoTestEnv")}</div><div class="info-value"><a href="${testUrl}" target="_blank">${lang==="en"?"Open →":"打开 →"}</a></div></div>
+    <div class="info-row"><div class="info-label">${t("infoStatus")}</div><div class="info-value" style="color:var(--color-b)">${statusText}</div></div>
+    ${testUrl?`<div class="info-row"><div class="info-label">${t("infoTestEnv")}</div><div class="info-value"><a href="${testUrl}" target="_blank">${lang==="en"?"Open →":"打开 →"}</a></div></div>`:""}
   </div>`;
+}
+
+// ── Test Case Review ──────────────────────────────────────────────────────────
+const TEST_CASES = {
+  "PROJ-101": [
+    {id:"TC-01", name:"User login with phone + OTP", priority:"P0"},
+    {id:"TC-02", name:"Login fails with invalid OTP", priority:"P0"},
+    {id:"TC-03", name:"Remember me persists session", priority:"P1"},
+    {id:"TC-04", name:"UI renders correctly on mobile", priority:"P1"},
+    {id:"TC-05", name:"Logout clears session", priority:"P2"},
+  ],
+  "PROJ-102": [
+    {id:"TC-01", name:"Credit card payment succeeds", priority:"P0"},
+    {id:"TC-02", name:"Apple Pay checkout flow", priority:"P0"},
+    {id:"TC-03", name:"Payment failure shows error", priority:"P0"},
+    {id:"TC-04", name:"Refund processes correctly", priority:"P1"},
+    {id:"TC-05", name:"Webhook receives payment event", priority:"P1"},
+  ],
+  "PROJ-103": [
+    {id:"TC-01", name:"Export sales report as Excel", priority:"P0"},
+    {id:"TC-02", name:"Export sales report as PDF", priority:"P0"},
+    {id:"TC-03", name:"Custom date range filter works", priority:"P1"},
+    {id:"TC-04", name:"Large dataset export completes", priority:"P1"},
+    {id:"TC-05", name:"Empty report shows placeholder", priority:"P2"},
+  ],
+  "PROJ-104": [
+    {id:"TC-01", name:"Push notification delivered on iOS", priority:"P0"},
+    {id:"TC-02", name:"Push notification delivered on Android", priority:"P0"},
+    {id:"TC-03", name:"Order status update triggers push", priority:"P0"},
+    {id:"TC-04", name:"Notification tapped opens correct page", priority:"P1"},
+    {id:"TC-05", name:"Disabled notifications not delivered", priority:"P1"},
+  ],
+};
+
+function buildTestCaseList(tid, version) {
+  const cases = TEST_CASES[tid] || [];
+  const versionNote = version > 1 ? (lang==="en"?` (v${version} — updated)`:`（v${version} — 已更新）`) : "";
+  const rows = cases.map(c=>`  ${c.id} [${c.priority}] ${c.name}`).join("\n");
+  return lang==="en"
+    ? `📋 **Test Cases${versionNote}** — ${cases.length} total:\n\n${rows}`
+    : `📋 **测试用例${versionNote}** — 共 ${cases.length} 条：\n\n${rows}`;
+}
+
+async function showTestCases(tid, btid, testUrl, version=1) {
+  const tk=TICKETS.find(x=>x.id===tid);
+  appendAndRender("b",btid,{role:"user",text:t("jackReviewingCases")});
+  await typingFor("b",800);
+  appendAndRender("b",btid,{role:"bot",
+    text: t("caseListIntro",ticketTitle(tk)) + "\n\n" + buildTestCaseList(tid,version),
+    actions:[
+      {label:t("btnModifyCases"), fn:()=>modifyTestCases(tid,btid,testUrl,version)},
+      {label:t("btnApproveCases"), fn:()=>approveTestCases(tid,btid)},
+    ]});
+  updateInfoB(tid,tk,testUrl,lang==="en"?"Reviewing test cases":"审查测试用例中");
+}
+
+async function modifyTestCases(tid, btid, testUrl, version) {
+  appendAndRender("b",btid,{role:"user",text:t("jackModifyCases")});
+  await typingFor("b",600);
+  sysEventFor("b",btid,lang==="en"?"⚙️ Updating test cases...":"⚙️ 正在更新测试用例...");
+  await delay(2000);
+  appendAndRender("b",btid,{role:"bot",text:t("casesUpdated")});
+  await delay(500);
+  // Show updated cases for re-review
+  await showTestCases(tid, btid, testUrl, version+1);
+}
+
+async function approveTestCases(tid, btid) {
+  const tk=TICKETS.find(x=>x.id===tid);
+  appendAndRender("b",btid,{role:"user",text:t("jackApprovedCases")});
+  await typingFor("b",500);
+  appendAndRender("b",btid,{role:"bot",text:t("casesApprovedStart"),
+    actions:[{label:t("btnApproveTest"),fn:()=>runTest(tid,btid)}]});
+  updateInfoB(tid,tk,ps.a.wf[tid]?.testUrl,t("statusPendingTest"));
 }
 
 async function runTest(tid, btid) {
