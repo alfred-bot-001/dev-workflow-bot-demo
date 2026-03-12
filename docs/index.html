@@ -139,7 +139,7 @@ header h1 span { color:var(--text-dim); font-weight:400; }
   </button>
   <button class="person-tab" data-person="b" onclick="switchPerson('b')">
     <span class="person-avatar">🧪</span>
-    <span class="person-info"><span class="person-name" id="name-b">Bob</span><span class="person-role" id="role-b">QA Engineer</span></span>
+    <span class="person-info"><span class="person-name" id="name-b">Jack</span><span class="person-role" id="role-b">QA Engineer</span></span>
     <span class="person-badge" id="badge-b"></span>
   </button>
   <button class="person-tab" data-person="c" onclick="switchPerson('c')">
@@ -171,7 +171,7 @@ header h1 span { color:var(--text-dim); font-weight:400; }
   </div>
 </div>
 
-<!-- Bob / 小B -->
+<!-- Jack / 小B -->
 <div class="person-panel" id="panel-b">
   <div class="main">
     <aside class="sidebar">
@@ -205,7 +205,7 @@ header h1 span { color:var(--text-dim); font-weight:400; }
         <div><div class="chat-title" id="chat-title-c">Release Assistant Bot</div><div class="chat-subtitle" id="chat-subtitle-c">Release tasks will appear here</div></div>
         <div class="chat-tabs" id="chat-tabs-c"><button class="chat-tab active" data-tid="__c__" onclick="switchTab('c','__c__')" id="main-tab-c">Main</button></div>
       </div>
-      <div class="messages" id="messages-c"><div class="empty-state-msg" id="empty-chat-c"><div class="empty-icon">🚀</div><div id="empty-chat-c-text">Waiting for Bob's tests to pass<br>Release tasks will be pushed here automatically</div></div></div>
+      <div class="messages" id="messages-c"><div class="empty-state-msg" id="empty-chat-c"><div class="empty-icon">🚀</div><div id="empty-chat-c-text">Waiting for Jack's tests to pass<br>Release tasks will be pushed here automatically</div></div></div>
       <div class="typing-wrap"><div class="msg-row bot" id="typing-c" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
     </section>
     <aside class="status-panel">
@@ -224,7 +224,7 @@ const T = {
     headerSub: "AI-driven Development Workflow Demo",
     langToggle: "中文",
     nameA:"Alex", roleA:"Developer",
-    nameB:"Bob",  roleB:"QA Engineer",
+    nameB:"Jack",  roleB:"QA Engineer",
     nameC:"Carol",roleC:"Release Engineer",
     sidebarA:"📋 Today's Jira Tickets",
     sidebarB:"🧪 Test Queue",
@@ -239,10 +239,10 @@ const T = {
     emptyB:"No test tasks yet", emptyBSub:"Waiting for dev to complete",
     emptyC:"No release tasks yet", emptyCSub:"Waiting for tests to pass",
     emptyChatB:"Waiting for Alex to finish development\nTest tasks will be pushed here automatically",
-    emptyChatC:"Waiting for Bob's tests to pass\nRelease tasks will be pushed here automatically",
+    emptyChatC:"Waiting for Jack's tests to pass\nRelease tasks will be pushed here automatically",
     mainTab:"Main",
     // Workflow steps
-    steps:["Open Bot, View Jira","Select Task","Generate Tech Spec","Dev Approves, Start Coding","Parallel Tasks","Bot Auto Code Review","Dev Approves PR","Deploy Test Env & Notify Bob","Bob Approves, Start Testing","Tests Done, Notify Bob","Trigger Release, Notify Carol","Carol Deploys Manually"],
+    steps:["Open Bot, View Jira","Select Task","Generate Tech Spec","Dev Approves, Start Coding","Parallel Tasks","Bot Auto Code Review","Dev Approves PR","Deploy Test Env & Notify Jack","Jack Approves, Start Testing","Tests Done, Notify Jack","Trigger Release, Notify Carol","Carol Deploys Manually"],
     // Bot messages
     greeting: (n,tickets) => `Good morning! 👋 You have <strong>${n} Jira tickets</strong> today:\n\n${tickets}\n\nWhich one would you like to start?`,
     ticketCard: (id,title,desc,est) => `Got <strong>${id}</strong> — ${title}\n\n📋 Description: ${desc}\n⏱ Estimate: ${est}\n\nReady to start? I can generate the tech spec first.`,
@@ -265,11 +265,11 @@ const T = {
     deployStart:"✅ PR approved! Creating test environment...",
     creatingTestEnv:"🚀 Creating isolated test environment...",
     testEnvReady:(url)=>`✅ Test environment ready: ${url}`,
-    testNotified:(url)=>`📬 <strong>Bob (QA)</strong> has been notified.\n\n🌐 Test env: <a href="${url}" target="_blank">${url}</a>\n📋 Test cases are ready, waiting for Bob's approval.`,
-    // Bob messages
-    bobTaskArrived:(title,url)=>`📋 New test task: <strong>${title}</strong>\n\nTest environment is ready. Please review the test cases and approve to start testing.\n\n🌐 Test env: <a href="${url}" target="_blank">${url}</a>`,
+    testNotified:(url)=>`📬 <strong>Jack (QA)</strong> has been notified.\n\n🌐 Test env: <a href="${url}" target="_blank">${url}</a>\n📋 Test cases are ready, waiting for Jack's approval.`,
+    // Jack messages
+    jackTaskArrived:(title,url)=>`📋 New test task: <strong>${title}</strong>\n\nTest environment is ready. Please review the test cases and approve to start testing.\n\n🌐 Test env: <a href="${url}" target="_blank">${url}</a>`,
     btnApproveTest:"✅ Approve & Start Testing",
-    bobApproved:"✅ Approve & Start Testing",
+    jackApproved:"✅ Approve & Start Testing",
     testingStart:"🧪 Starting automated test execution...",
     testStep:["Initializing test environment...","Running UI test suite...","Running API integration tests...","Running performance tests...","Generating test report..."],
     testDone:(p,t,cov,dur)=>`✅ <strong>All tests passed!</strong>\n\n📊 Passed: ${p}/${t} | Failed: 0 | Coverage: ${cov}\n⏱ Duration: ${dur}\n\nCode quality is excellent. Ready for production! 🎉`,
@@ -339,9 +339,9 @@ const T = {
     creatingTestEnv:"🚀 正在创建独立测试环境...",
     testEnvReady:(url)=>`✅ 测试环境已就绪：${url}`,
     testNotified:(url)=>`📬 已通知 <strong>小B（Tester）</strong> 开始测试任务。\n\n🌐 测试环境：<a href="${url}" target="_blank">${url}</a>\n📋 测试用例已准备好，等待小B审批。`,
-    bobTaskArrived:(title,url)=>`📋 新测试任务：<strong>${title}</strong>\n\n测试环境已就绪，请 Review 测试用例后批准开始测试。\n\n🌐 测试环境：<a href="${url}" target="_blank">${url}</a>`,
+    jackTaskArrived:(title,url)=>`📋 新测试任务：<strong>${title}</strong>\n\n测试环境已就绪，请 Review 测试用例后批准开始测试。\n\n🌐 测试环境：<a href="${url}" target="_blank">${url}</a>`,
     btnApproveTest:"✅ 审批，开始测试",
-    bobApproved:"✅ 审批，开始测试",
+    jackApproved:"✅ 审批，开始测试",
     testingStart:"🧪 开始执行自动化测试...",
     testStep:["初始化测试环境...","执行 UI 测试套件...","执行 API 集成测试...","执行性能测试...","生成测试报告..."],
     testDone:(p,t,cov,dur)=>`✅ <strong>测试全部通过！</strong>\n\n📊 通过：${p}/${t} | 失败：0 | 覆盖率：${cov}\n⏱ 耗时：${dur}\n\n代码质量优秀，可以发布！ 🎉`,
@@ -589,7 +589,7 @@ async function notifyB(tid, testUrl) {
   const btid=`b_${tid}`;
   if(!ps.b.threads[btid]) ps.b.threads[btid]=[];
   ps.b.tid=btid; addTabFor("b",btid,tid); addQueueCard("b",tid);
-  const msg={role:"bot",text:t("bobTaskArrived",ticketTitle(tk),testUrl),
+  const msg={role:"bot",text:t("jackTaskArrived",ticketTitle(tk),testUrl),
     actions:[{label:t("btnApproveTest"),fn:()=>runTest(tid,btid)}]};
   ps.b.threads[btid].push(msg);
   if(currentPerson==="b"){ switchTab("b",btid); scrollBot("b"); } else addBadge("b");
@@ -603,7 +603,7 @@ async function notifyB(tid, testUrl) {
 
 async function runTest(tid, btid) {
   const tk=TICKETS.find(x=>x.id===tid);
-  appendAndRender("b",btid,{role:"user",text:t("bobApproved")});
+  appendAndRender("b",btid,{role:"user",text:t("jackApproved")});
   await typingFor("b",600); appendAndRender("b",btid,{role:"bot",text:t("testingStart")});
   for(const s of t("testStep")){ await delay(800); sysEventFor("b",btid,`⚙️ ${s}`); }
   await delay(1000);
