@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Workflow Bot Demo</title>
+  <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+  --border: #2e3347; --accent: #4f8ef7; --accent2: #6ee7b7;
+  --text: #e2e8f0; --text-dim: #8892a4;
+  --bot-bubble: #1e3a5f; --user-bubble: #1a2a1a;
+  --system-color: #64748b; --high: #f87171; --med: #fbbf24;
+  --low: #4ade80; --done: #6ee7b7;
+  --color-a: #4f8ef7; --color-b: #a78bfa; --color-c: #34d399;
+}
+body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+header { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 20px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+header h1 { font-size:17px; font-weight:700; color:var(--accent); }
+header h1 span { color:var(--text-dim); font-weight:400; }
+.header-sub { font-size:12px; color:var(--text-dim); }
+.person-tabs { display:flex; background:var(--surface); border-bottom:2px solid var(--border); padding:0 16px; flex-shrink:0; gap:4px; }
+.person-tab { display:flex; align-items:center; gap:10px; padding:10px 20px; background:transparent; border:none; border-bottom:3px solid transparent; margin-bottom:-2px; cursor:pointer; color:var(--text-dim); transition:all .2s; position:relative; }
+.person-tab:hover { color:var(--text); }
+.person-tab.active { color:var(--text); }
+.person-tab[data-person="a"].active { border-bottom-color:var(--color-a); }
+.person-tab[data-person="b"].active { border-bottom-color:var(--color-b); }
+.person-tab[data-person="c"].active { border-bottom-color:var(--color-c); }
+.person-avatar { font-size:20px; }
+.person-info { display:flex; flex-direction:column; align-items:flex-start; }
+.person-name { font-size:14px; font-weight:700; line-height:1.2; }
+.person-role { font-size:11px; opacity:.7; }
+.person-badge { background:#f87171; color:white; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; min-width:18px; text-align:center; display:none; }
+.person-panel { display:none; flex:1; overflow:hidden; }
+.person-panel.active { display:flex; flex-direction:column; }
+.main { display:grid; grid-template-columns:270px 1fr 290px; flex:1; overflow:hidden; }
+.sidebar { background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+.sidebar-title { padding:12px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); border-bottom:1px solid var(--border); flex-shrink:0; }
+.ticket-list { flex:1; overflow-y:auto; padding:8px; }
+.ticket-card { padding:11px 12px; border-radius:8px; border:1px solid var(--border); margin-bottom:7px; cursor:pointer; transition:all .2s; background:var(--surface2); }
+.ticket-card:hover { border-color:var(--accent); }
+.ticket-card.active { border-color:var(--accent); background:#1a2540; }
+.ticket-id { font-size:11px; color:var(--text-dim); margin-bottom:3px; }
+.ticket-title-text { font-size:13px; font-weight:600; line-height:1.4; margin-bottom:7px; }
+.ticket-meta { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.badge { padding:2px 7px; border-radius:10px; font-size:11px; font-weight:600; }
+.badge-high { background:rgba(248,113,113,.15); color:var(--high); }
+.badge-medium { background:rgba(251,191,36,.15); color:var(--med); }
+.badge-est { background:rgba(79,142,247,.1); color:var(--accent); }
+.ticket-state-label { font-size:11px; color:var(--accent2); margin-top:5px; }
+.step-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:6px; }
+.step-fill { height:100%; background:var(--accent); transition:width .5s; }
+.queue-card { padding:11px 12px; border-radius:8px; border:1px solid var(--border); margin-bottom:7px; cursor:pointer; background:var(--surface2); transition:all .2s; }
+.queue-card:hover { border-color:var(--accent2); }
+.queue-card.new { border-color:var(--accent2); animation:pulse-border 2s ease-out; }
+@keyframes pulse-border { 0%{box-shadow:0 0 0 0 rgba(110,231,183,.4);} 70%{box-shadow:0 0 0 6px rgba(110,231,183,0);} 100%{box-shadow:none;} }
+.queue-title { font-size:13px; font-weight:600; margin-bottom:4px; }
+.queue-sub { font-size:11px; color:var(--text-dim); }
+.queue-status { font-size:11px; margin-top:5px; }
+.queue-status.pending { color:var(--med); }
+.queue-status.done { color:var(--done); }
+.empty-queue { padding:20px 12px; font-size:13px; color:var(--text-dim); text-align:center; line-height:1.8; }
+.empty-queue span { font-size:11px; }
+.chat-area { display:flex; flex-direction:column; overflow:hidden; }
+.chat-header { padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; flex-shrink:0; background:var(--bg); }
+.chat-title { font-size:14px; font-weight:700; }
+.chat-subtitle { font-size:11px; color:var(--text-dim); }
+.chat-tabs { display:flex; gap:5px; overflow-x:auto; margin-left:auto; }
+.chat-tab { padding:4px 10px; border-radius:6px; font-size:12px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; white-space:nowrap; transition:all .2s; }
+.chat-tab.active { background:var(--accent); border-color:var(--accent); color:white; }
+.chat-tab.notify { border-color:var(--accent2); color:var(--accent2); }
+.messages { flex:1; overflow-y:auto; padding:16px 18px; display:flex; flex-direction:column; gap:10px; }
+.typing-wrap { padding:0 18px 10px; flex-shrink:0; min-height:40px; }
+.msg-row { display:flex; align-items:flex-end; gap:8px; max-width:78%; }
+.msg-row.bot { align-self:flex-start; }
+.msg-row.user { align-self:flex-end; flex-direction:row-reverse; }
+.msg-avatar { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; background:var(--surface2); }
+.msg-content { display:flex; flex-direction:column; gap:5px; }
+.bubble { padding:9px 13px; border-radius:12px; font-size:13px; line-height:1.65; }
+.bubble.bot { background:var(--bot-bubble); border-bottom-left-radius:3px; }
+.bubble.user { background:var(--user-bubble); border-bottom-right-radius:3px; color:#c8f0c8; }
+.bubble a { color:var(--accent); text-decoration:none; }
+.bubble a:hover { text-decoration:underline; }
+.bubble code { background:rgba(255,255,255,.1); padding:1px 5px; border-radius:3px; font-family:monospace; font-size:12px; }
+.system-event { align-self:center; font-size:11px; color:var(--system-color); background:var(--surface); padding:3px 12px; border-radius:20px; border:1px solid var(--border); }
+.action-buttons { display:flex; gap:7px; flex-wrap:wrap; margin-top:3px; }
+.action-btn { padding:6px 13px; border-radius:8px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-size:12px; cursor:pointer; transition:all .2s; }
+.action-btn:hover { background:var(--accent); color:white; }
+.action-btn.done { opacity:.35; pointer-events:none; }
+.typing-indicator { display:flex; gap:4px; align-items:center; padding:9px 13px; background:var(--bot-bubble); border-radius:12px; border-bottom-left-radius:3px; }
+.typing-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:bounce 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay:.2s; }
+.typing-dot:nth-child(3) { animation-delay:.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-5px);opacity:1;} }
+.empty-state-msg { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text-dim); font-size:13px; text-align:center; margin:auto; padding:40px 20px; line-height:1.7; }
+.empty-icon { font-size:40px; }
+.status-panel { background:var(--surface); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+.panel-title { padding:12px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); border-bottom:1px solid var(--border); flex-shrink:0; }
+.panel-body { flex:1; overflow-y:auto; padding:14px; }
+.panel-hint { color:var(--text-dim); font-size:12px; }
+.step-list { display:flex; flex-direction:column; gap:3px; }
+.step-item { display:flex; align-items:center; gap:9px; padding:7px 9px; border-radius:7px; font-size:12px; transition:all .3s; }
+.step-item.active { background:rgba(79,142,247,.12); color:var(--accent); font-weight:600; }
+.step-item.done { color:var(--done); }
+.step-item.pending { color:var(--text-dim); }
+.step-num { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.step-num.active { background:var(--accent); color:white; }
+.step-num.done { background:var(--done); color:#0f1117; }
+.step-num.pending { background:var(--border); color:var(--text-dim); }
+.info-section { margin-top:16px; border-top:1px solid var(--border); padding-top:14px; }
+.info-title { font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+.info-row { margin-bottom:10px; }
+.info-label { font-size:11px; color:var(--text-dim); margin-bottom:2px; }
+.info-value { font-size:12px; color:var(--text); word-break:break-all; }
+.info-value a { color:var(--accent); text-decoration:none; }
+.info-value code { font-family:monospace; font-size:11px; background:rgba(255,255,255,.07); padding:1px 5px; border-radius:3px; }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+.bubble strong { font-weight:700; color:#fff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 Dev Workflow Bot <span>Demo</span></h1>
+  <div class="header-sub">AI 驱动的研发流程演示（纯前端）</div>
+</header>
+
+<div class="person-tabs">
+  <button class="person-tab active" data-person="a" onclick="switchPerson('a')">
+    <span class="person-avatar">👨‍💻</span>
+    <span class="person-info"><span class="person-name">小A</span><span class="person-role">开发者</span></span>
+    <span class="person-badge" id="badge-a"></span>
+  </button>
+  <button class="person-tab" data-person="b" onclick="switchPerson('b')">
+    <span class="person-avatar">🧪</span>
+    <span class="person-info"><span class="person-name">小B</span><span class="person-role">测试工程师</span></span>
+    <span class="person-badge" id="badge-b"></span>
+  </button>
+  <button class="person-tab" data-person="c" onclick="switchPerson('c')">
+    <span class="person-avatar">🚀</span>
+    <span class="person-info"><span class="person-name">小C</span><span class="person-role">发布工程师</span></span>
+    <span class="person-badge" id="badge-c"></span>
+  </button>
+</div>
+
+<!-- 小A -->
+<div class="person-panel active" id="panel-a">
+  <div class="main">
+    <aside class="sidebar">
+      <div class="sidebar-title">📋 今日 Jira Tickets</div>
+      <div class="ticket-list" id="ticket-list-a"></div>
+    </aside>
+    <section class="chat-area">
+      <div class="chat-header">
+        <div><div class="chat-title" id="chat-title-a">Dev 助手</div><div class="chat-subtitle" id="chat-subtitle-a">点击左侧任务开始</div></div>
+        <div class="chat-tabs" id="chat-tabs-a">
+          <button class="chat-tab active" data-tid="__a__" onclick="switchTab('a','__a__')">主频道</button>
+        </div>
+      </div>
+      <div class="messages" id="messages-a"></div>
+      <div class="typing-wrap"><div class="msg-row bot" id="typing-a" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
+    </section>
+    <aside class="status-panel">
+      <div class="panel-title">📊 开发流程进度</div>
+      <div class="panel-body"><div class="step-list" id="step-list-a"></div><div id="info-a"><div class="panel-hint">点击左侧 Ticket 查看详情</div></div></div>
+    </aside>
+  </div>
+</div>
+
+<!-- 小B -->
+<div class="person-panel" id="panel-b">
+  <div class="main">
+    <aside class="sidebar">
+      <div class="sidebar-title">🧪 待测试任务</div>
+      <div class="ticket-list" id="ticket-list-b"><div class="empty-queue">暂无待测试任务<br><span>等待开发完成后通知</span></div></div>
+    </aside>
+    <section class="chat-area">
+      <div class="chat-header">
+        <div><div class="chat-title">Bot 测试助手</div><div class="chat-subtitle">收到测试任务后在此交互</div></div>
+        <div class="chat-tabs" id="chat-tabs-b"><button class="chat-tab active" data-tid="__b__" onclick="switchTab('b','__b__')">主频道</button></div>
+      </div>
+      <div class="messages" id="messages-b"><div class="empty-state-msg"><div class="empty-icon">🧪</div><div>等待小A 完成开发<br>测试任务会自动推送到这里</div></div></div>
+      <div class="typing-wrap"><div class="msg-row bot" id="typing-b" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
+    </section>
+    <aside class="status-panel">
+      <div class="panel-title">📋 测试详情</div>
+      <div class="panel-body"><div id="info-b"><div class="panel-hint">收到测试任务后显示详情</div></div></div>
+    </aside>
+  </div>
+</div>
+
+<!-- 小C -->
+<div class="person-panel" id="panel-c">
+  <div class="main">
+    <aside class="sidebar">
+      <div class="sidebar-title">🚀 待发布任务</div>
+      <div class="ticket-list" id="ticket-list-c"><div class="empty-queue">暂无待发布任务<br><span>等待测试通过后通知</span></div></div>
+    </aside>
+    <section class="chat-area">
+      <div class="chat-header">
+        <div><div class="chat-title">Bot 发布助手</div><div class="chat-subtitle">收到发布任务后在此交互</div></div>
+        <div class="chat-tabs" id="chat-tabs-c"><button class="chat-tab active" data-tid="__c__" onclick="switchTab('c','__c__')">主频道</button></div>
+      </div>
+      <div class="messages" id="messages-c"><div class="empty-state-msg"><div class="empty-icon">🚀</div><div>等待小B 测试通过<br>发布任务会自动推送到这里</div></div></div>
+      <div class="typing-wrap"><div class="msg-row bot" id="typing-c" style="display:none"><div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
+    </section>
+    <aside class="status-panel">
+      <div class="panel-title">📋 发布详情</div>
+      <div class="panel-body"><div id="info-c"><div class="panel-hint">收到发布任务后显示详情</div></div></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const TICKETS = [
+  { id:"PROJ-101", title:"用户登录页面优化", desc:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能", priority:"High", est:"3d" },
+  { id:"PROJ-102", title:"支付接口集成", desc:"集成 Stripe 支付网关，支持信用卡和 Apple Pay", priority:"High", est:"5d" },
+  { id:"PROJ-103", title:"报表导出功能", desc:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围", priority:"Medium", est:"2d" },
+  { id:"PROJ-104", title:"推送通知系统", desc:"集成 Firebase FCM，实现订单状态推送通知", priority:"Medium", est:"4d" },
+];
+const STEPS = [
+  {n:1,l:"打开 Bot，查看 Jira"},{n:2,l:"选择任务"},{n:3,l:"生成技术规范 Spec"},
+  {n:4,l:"Dev 审批，下令开发"},{n:5,l:"并行任务"},{n:6,l:"Bot 自动 Code Review"},
+  {n:7,l:"Dev 审批 PR"},{n:8,l:"部署测试环境 & 通知小B"},{n:9,l:"小B 审批，开始测试"},
+  {n:10,l:"测试完成，通知小B"},{n:11,l:"触发发布，通知小C"},{n:12,l:"小C 发布到生产"},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentPerson = "a";
+const ps = {
+  a:{ tid:"__a__", threads:{"__a__":[]}, wf:{} },
+  b:{ tid:"__b__", threads:{"__b__":[]}, wf:{} },
+  c:{ tid:"__c__", threads:{"__c__":[]}, wf:{} },
+};
+const badges = {a:0,b:0,c:0};
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+  renderTicketList();
+  renderSteps("a", 0);
+  delay(600).then(() => botMsg("a","__a__",
+    `早上好！👋 你今天有 <strong>${TICKETS.length} 个</strong> Jira 任务：\n\n${
+      TICKETS.map(t=>`• <strong>${t.id}</strong> [${t.priority}] ${t.title} (${t.est})`).join("\n")
+    }\n\n要开始开发哪个？`
+  ));
+});
+
+// ── Person switch ─────────────────────────────────────────────────────────────
+function switchPerson(p) {
+  currentPerson = p;
+  document.querySelectorAll(".person-tab").forEach(t => t.classList.toggle("active", t.dataset.person===p));
+  document.querySelectorAll(".person-panel").forEach(el => el.classList.toggle("active", el.id===`panel-${p}`));
+  clearBadge(p);
+  // Re-render current thread
+  const tid = ps[p].tid;
+  const thread = ps[p].threads[tid] || [];
+  const box = document.getElementById(`messages-${p}`);
+  if (box && thread.length > 0) {
+    box.innerHTML = "";
+    thread.forEach(m => renderMsgEl(p, m));
+    scrollBot(p);
+  }
+  syncTabs(p);
+}
+
+// ── Chat tab switch ───────────────────────────────────────────────────────────
+function switchTab(p, tid) {
+  ps[p].tid = tid;
+  syncTabs(p);
+  const box = document.getElementById(`messages-${p}`);
+  if (!box) return;
+  box.innerHTML = "";
+  (ps[p].threads[tid]||[]).forEach(m => renderMsgEl(p, m));
+  scrollBot(p);
+  if (p==="a") {
+    const wf = ps.a.wf[tid];
+    renderSteps("a", wf?.step||0);
+    renderInfoA(tid);
+  }
+}
+
+function syncTabs(p) {
+  const tid = ps[p].tid;
+  document.querySelectorAll(`#chat-tabs-${p} .chat-tab`).forEach(t => {
+    t.classList.toggle("active", t.dataset.tid===tid);
+    if (t.dataset.tid===tid) t.classList.remove("notify");
+  });
+}
+
+function addTabFor(p, tid, label) {
+  const c = document.getElementById(`chat-tabs-${p}`);
+  if (!c || c.querySelector(`[data-tid="${tid}"]`)) return;
+  const btn = document.createElement("button");
+  btn.className="chat-tab"; btn.dataset.tid=tid; btn.textContent=label;
+  btn.onclick=()=>switchTab(p,tid);
+  c.appendChild(btn);
+}
+
+// ── Ticket list (小A) ─────────────────────────────────────────────────────────
+function renderTicketList() {
+  const list = document.getElementById("ticket-list-a");
+  TICKETS.forEach(t => {
+    const card = document.createElement("div");
+    card.className="ticket-card"; card.dataset.tid=t.id; card.onclick=()=>selectTicket(t.id);
+    const pc = t.priority==="High"?"badge-high":"badge-medium";
+    card.innerHTML=`<div class="ticket-id">${t.id}</div>
+      <div class="ticket-title-text">${t.title}</div>
+      <div class="ticket-meta"><span class="badge ${pc}">${t.priority}</span><span class="badge badge-est">${t.est}</span></div>
+      <div class="ticket-state-label" id="state-${t.id}">待处理</div>
+      <div class="step-bar"><div class="step-fill" id="bar-${t.id}" style="width:0%"></div></div>`;
+    list.appendChild(card);
+  });
+}
+
+function updateCard(tid) {
+  const wf = ps.a.wf[tid];
+  if (!wf) return;
+  const el = document.getElementById(`state-${tid}`);
+  const bar = document.getElementById(`bar-${tid}`);
+  if (el) el.textContent = wf.stateLabel||"";
+  if (bar) bar.style.width = Math.round((wf.step/12)*100)+"%";
+}
+
+// ── 小A workflow ──────────────────────────────────────────────────────────────
+async function selectTicket(tid) {
+  const ticket = TICKETS.find(t=>t.id===tid);
+  if (!ticket) return;
+  if (!ps.a.threads[tid]) ps.a.threads[tid]=[];
+  addTabFor("a", tid, tid);
+  switchTab("a", tid);
+  document.querySelectorAll(".ticket-card").forEach(c=>c.classList.toggle("active",c.dataset.tid===tid));
+
+  const wf = ps.a.wf[tid];
+  if (wf) {
+    // Already started - show current state card
+    const actions = actionsFor(wf.state, tid);
+    appendAndRender("a", tid, {role:"bot", text:
+      `📋 <strong>${ticket.id}</strong> — ${ticket.title}\n\n需求描述：${ticket.desc}\n⏱ 预估工时：${ticket.est}\n\n当前进度：<strong>${wf.stateLabel}</strong>`,
+      actions});
+  } else {
+    // New ticket
+    ps.a.wf[tid] = {state:"idle", step:0, stateLabel:"待确认", branch:null, specUrl:null, prUrl:null, testUrl:null};
+    updateCard(tid);
+    await typing("a", 800);
+    appendAndRender("a", tid, {role:"bot",
+      text:`收到 <strong>${ticket.id}</strong> — ${ticket.title}\n\n📋 需求描述：${ticket.desc}\n⏱ 预估工时：${ticket.est}\n\n要开始做吗？我可以先生成技术规范文档。`,
+      actions:[
+        {label:"✅ 开始，先做 Spec 文档", fn:()=>runSpec(tid)},
+        {label:"⏭ 跳过，直接开始开发",   fn:()=>runDev(tid)},
+        {label:"❌ 暂不处理",             fn:()=>botMsg("a",tid,"好的，已跳过。有需要随时叫我 👍")},
+      ]});
+    setWf(tid, "waiting_start", 1, "Step 1: 待确认");
+  }
+}
+
+async function runSpec(tid) {
+  const ticket = TICKETS.find(t=>t.id===tid);
+  setWf(tid,"generating_spec",3,"Step 3: 生成规范中");
+  await typing("a",600);
+  appendAndRender("a",tid,{role:"bot",text:"好的！我来拉代码分支并生成技术规范文档..."});
+  await delay(1200);
+  sysEvent("a",tid,"⚙️ 正在创建 Git 分支...");
+  await delay(1500);
+  const slug = ticket.id.toLowerCase();
+  const branch = `feature/${slug}-${ticket.title.replace(/\s+/g,"-").toLowerCase().slice(0,20)}`;
+  ps.a.wf[tid].branch = branch;
+  sysEvent("a",tid,`✅ 分支已创建：\`${branch}\``);
+  await delay(800);
+  sysEvent("a",tid,"📝 正在生成技术规范文档（Spec）...");
+  await delay(3000);
+  const specNum = Math.floor(Math.random()*9000+1000);
+  const specUrl = `https://github.com/org/repo/blob/feature/${slug}/docs/SPEC-${specNum}.md`;
+  ps.a.wf[tid].specUrl = specUrl;
+  setWf(tid,"waiting_spec",3,"Step 3: 待Review规范");
+  await typing("a",1000);
+  appendAndRender("a",tid,{role:"bot",
+    text:`✅ 技术规范文档已生成！\n\n📄 <strong>Spec 文档</strong>：<a href="${specUrl}" target="_blank">点击查看</a>\n🌿 <strong>开发分支</strong>：<code>${branch}</code>\n\n主要内容包括：技术选型、接口设计、数据模型、测试策略。\n\n请 Review 后告诉我是否可以开始开发 👇`,
+    actions:[
+      {label:"✅ Spec 没问题，开始开发", fn:()=>runDev(tid)},
+      {label:"✏️ 需要修改 Spec",         fn:()=>runSpec(tid)},
+    ]});
+  renderInfoA(tid);
+}
+
+async function runDev(tid) {
+  const otherTickets = TICKETS.filter(t=>t.id!==tid);
+  setWf(tid,"developing",5,"Step 4-5: 开发中");
+  await typing("a",500);
+  appendAndRender("a",tid,{role:"bot",text:"🚀 开始开发！我会在完成后通知你。"});
+  if (otherTickets.length) {
+    await delay(1200);
+    appendAndRender("a",tid,{role:"bot",
+      text:`💡 提示：开发期间你可以同时处理其他任务，比如 <strong>${otherTickets[0].id}</strong> — ${otherTickets[0].title}`,
+      actions:[{label:`开始处理 ${otherTickets[0].id}`, fn:()=>selectTicket(otherTickets[0].id)}]});
+  }
+  const devSteps = ["分析需求文档...","搭建基础框架...","实现核心逻辑...","编写单元测试...","代码格式化 & Lint 检查..."];
+  for (const s of devSteps) { await delay(1200); sysEvent("a",tid,`⚙️ ${s}`); }
+  // Code review
+  setWf(tid,"code_review",6,"Step 6: Bot Code Review");
+  sysEvent("a",tid,"🔍 Bot 正在执行第一轮 Code Review...");
+  await delay(3000);
+  const issues = Math.floor(Math.random()*3);
+  const sugg = Math.floor(Math.random()*4)+2;
+  const prNum = Math.floor(Math.random()*900+100);
+  const prUrl = `https://github.com/org/repo/pull/${prNum}`;
+  ps.a.wf[tid].prUrl = prUrl;
+  setWf(tid,"waiting_pr",7,"Step 7: 待Review PR");
+  await typing("a",1200);
+  appendAndRender("a",tid,{role:"bot",
+    text:`🎉 代码开发完成！已完成第一轮自动 Code Review：\n\n${issues>0?"⚠️":"✅"} <strong>${issues} 个问题</strong> / <strong>${sugg} 条建议</strong>\n📊 发现 ${issues} 个问题，${sugg} 条建议。代码质量良好，逻辑清晰。\n\n🔗 <strong>PR 链接</strong>：<a href="${prUrl}" target="_blank">Pull Request</a>\n\n请你 Review 代码，确认没问题后审批 👇`,
+    actions:[
+      {label:"✅ 代码没问题，审批通过", fn:()=>runDeploy(tid)},
+      {label:"💬 需要修改",             fn:()=>botMsg("a",tid,"好的，请在 PR 中提交修改意见，我稍后处理。")},
+    ]});
+  renderInfoA(tid);
+}
+
+async function runDeploy(tid) {
+  setWf(tid,"deploying",8,"Step 8: 部署测试环境");
+  await typing("a",500);
+  appendAndRender("a",tid,{role:"bot",text:"✅ PR 已审批！开始创建测试环境并部署..."});
+  sysEvent("a",tid,"🚀 正在创建独立测试环境...");
+  await delay(3000);
+  const envId = tid.toLowerCase().replace("-","");
+  const testUrl = `https://test-${envId}.staging.example.com`;
+  ps.a.wf[tid].testUrl = testUrl;
+  sysEvent("a",tid,`✅ 测试环境已就绪：${testUrl}`);
+  setWf(tid,"waiting_test",9,"Step 9: 待小B审批");
+  await typing("a",1000);
+  appendAndRender("a",tid,{role:"bot",
+    text:`📬 已通知 <strong>小B（Tester）</strong> 开始测试任务。\n\n🌐 测试环境：<a href="${testUrl}" target="_blank">${testUrl}</a>\n📋 测试用例已准备好，等待小B审批。`});
+  renderInfoA(tid);
+  // Notify 小B
+  await delay(1500);
+  notifyB(tid, testUrl);
+}
+
+async function notifyB(tid, testUrl) {
+  const ticket = TICKETS.find(t=>t.id===tid);
+  const btid = `b_${tid}`;
+  if (!ps.b.threads[btid]) ps.b.threads[btid]=[];
+  ps.b.tid = btid;
+  addTabFor("b", btid, tid);
+  // Add queue card
+  addQueueCard("b", tid);
+  // Send bot message to 小B
+  const msg = {role:"bot", text:`📋 新测试任务：<strong>${ticket.title}</strong>\n\n测试环境已就绪，请 Review 测试用例后批准开始测试。\n\n🌐 测试环境：<a href="${testUrl}" target="_blank">${testUrl}</a>`,
+    actions:[{label:"✅ 审批，开始测试", fn:()=>runTest(tid, btid)}]};
+  ps.b.threads[btid].push(msg);
+  if (currentPerson==="b") { switchTab("b",btid); scrollBot("b"); }
+  else addBadge("b");
+  // Update 小B info panel
+  document.getElementById("info-b").innerHTML=`<div class="info-section"><div class="info-title">测试任务</div>
+    <div class="info-row"><div class="info-label">Ticket</div><div class="info-value">${tid} — ${ticket.title}</div></div>
+    <div class="info-row"><div class="info-label">状态</div><div class="info-value" style="color:var(--color-b)">待审批测试</div></div>
+    <div class="info-row"><div class="info-label">测试环境</div><div class="info-value"><a href="${testUrl}" target="_blank">打开 →</a></div></div>
+  </div>`;
+}
+
+async function runTest(tid, btid) {
+  const ticket = TICKETS.find(t=>t.id===tid);
+  // 小B user message
+  appendAndRender("b", btid, {role:"user", text:"✅ 审批，开始测试"});
+  await typingFor("b",600);
+  appendAndRender("b",btid,{role:"bot",text:"🧪 开始执行自动化测试..."});
+  // Progress events in 小B
+  const testSteps=["初始化测试环境...","执行 UI 测试套件...","执行 API 集成测试...","执行性能测试...","生成测试报告..."];
+  for (const s of testSteps) { await delay(800); sysEventFor("b",btid,`⚙️ ${s}`); }
+  await delay(1000);
+  const total=Math.floor(Math.random()*30+20), failed=0, passed=total;
+  const cov=Math.floor(Math.random()*14+82)+"%", dur=(Math.random()*15+8).toFixed(1)+"s";
+  // 小B gets results
+  appendAndRender("b",btid,{role:"bot",
+    text:`✅ <strong>测试全部通过！</strong>\n\n📊 通过：${passed}/${total} | 失败：${failed} | 覆盖率：${cov}\n⏱ 耗时：${dur}\n\n代码质量优秀，可以发布！`});
+  // Also notify 小A
+  setWf(tid,"waiting_release",11,"Step 11: 待小C发布");
+  await typing("a",800);
+  appendAndRender("a",tid,{role:"bot",
+    text:`✅ 测试全部通过！\n\n📊 ${passed}/${total} 通过 | 覆盖率 ${cov}\n\n已通知 <strong>小C（Release）</strong> 准备发布。`});
+  renderInfoA(tid);
+  // Notify 小C
+  await delay(1500);
+  notifyC(tid);
+}
+
+async function notifyC(tid) {
+  const ticket = TICKETS.find(t=>t.id===tid);
+  const ctid = `c_${tid}`;
+  if (!ps.c.threads[ctid]) ps.c.threads[ctid]=[];
+  ps.c.tid = ctid;
+  addTabFor("c", ctid, tid);
+  addQueueCard("c", tid);
+  const msg = {role:"bot", text:`🚀 发布任务：<strong>${ticket.title}</strong>\n\n测试已全部通过，可以发布到生产环境。\n\n请确认后开始发布流程。`,
+    actions:[{label:"🚀 确认发布到生产", fn:()=>runRelease(tid, ctid)}]};
+  ps.c.threads[ctid].push(msg);
+  if (currentPerson==="c") { switchTab("c",ctid); scrollBot("c"); }
+  else addBadge("c");
+  document.getElementById("info-c").innerHTML=`<div class="info-section"><div class="info-title">发布任务</div>
+    <div class="info-row"><div class="info-label">Ticket</div><div class="info-value">${tid} — ${ticket.title}</div></div>
+    <div class="info-row"><div class="info-label">状态</div><div class="info-value" style="color:var(--color-c)">待确认发布</div></div>
+  </div>`;
+}
+
+async function runRelease(tid, ctid) {
+  appendAndRender("c",ctid,{role:"user",text:"🚀 确认发布到生产"});
+  await typingFor("c",500);
+  appendAndRender("c",ctid,{role:"bot",text:"🚀 开始生产发布..."});
+  const relSteps=["创建发布包...","备份当前版本...","蓝绿切换流量...","健康检查...","更新 CDN 缓存..."];
+  for (const s of relSteps) { await delay(700); sysEventFor("c",ctid,`⚙️ ${s}`); }
+  const ver=`v1.${Math.floor(Math.random()*9+1)}.${Math.floor(Math.random()*20)}`;
+  await delay(1000);
+  appendAndRender("c",ctid,{role:"bot",
+    text:`🎉 <strong>发布成功！</strong>\n\n📦 版本号：<strong>${ver}</strong>\n🌐 生产地址：<a href="https://app.example.com" target="_blank">app.example.com</a>`});
+  // Notify 小A - done!
+  setWf(tid,"done",12,"✅ 完成");
+  await typing("a",800);
+  appendAndRender("a",tid,{role:"bot",
+    text:`🎉 <strong>${tid} 发布成功！</strong>\n\n📦 版本：<strong>${ver}</strong>\n🌐 生产：<a href="https://app.example.com" target="_blank">app.example.com</a>\n\n整个研发流程已完成 ✅`});
+  renderInfoA(tid);
+  // Update 小C queue card
+  const qc = document.querySelector(`#ticket-list-c [data-tid="${tid}"] .queue-status`);
+  if (qc) { qc.textContent="✅ 已发布"; qc.className="queue-status done"; }
+}
+
+// ── Queue cards ───────────────────────────────────────────────────────────────
+function addQueueCard(person, tid) {
+  const list = document.getElementById(`ticket-list-${person}`);
+  if (!list || list.querySelector(`[data-tid="${tid}"]`)) return;
+  list.querySelector(".empty-queue")?.remove();
+  const ticket = TICKETS.find(t=>t.id===tid);
+  const ptid = `${person}_${tid}`;
+  const card = document.createElement("div");
+  card.className="queue-card new"; card.dataset.tid=tid;
+  card.onclick=()=>switchTab(person, ptid);
+  card.innerHTML=`<div class="queue-title">${tid}</div>
+    <div class="queue-sub">${ticket?.title||""}</div>
+    <div class="queue-status pending" id="qstatus-${person}-${tid}">⏳ 待处理</div>`;
+  list.appendChild(card);
+}
+
+// ── Workflow state ────────────────────────────────────────────────────────────
+function setWf(tid, state, step, label) {
+  if (!ps.a.wf[tid]) ps.a.wf[tid]={};
+  ps.a.wf[tid].state=state; ps.a.wf[tid].step=step; ps.a.wf[tid].stateLabel=label;
+  updateCard(tid);
+  if (ps.a.tid===tid) renderSteps("a",step);
+}
+
+function actionsFor(state, tid) {
+  const m = {
+    waiting_start:[{label:"✅ 开始，先做 Spec 文档",fn:()=>runSpec(tid)},{label:"⏭ 跳过，直接开发",fn:()=>runDev(tid)}],
+    waiting_spec:[{label:"✅ Spec 没问题，开始开发",fn:()=>runDev(tid)},{label:"✏️ 需要修改",fn:()=>runSpec(tid)}],
+    waiting_pr:[{label:"✅ 代码没问题，审批通过",fn:()=>runDeploy(tid)}],
+  };
+  return m[state]||[];
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function botMsg(p, tid, text, actions) {
+  appendAndRender(p, tid, {role:"bot", text, actions});
+}
+
+function appendAndRender(p, tid, msg) {
+  if (!ps[p].threads[tid]) ps[p].threads[tid]=[];
+  ps[p].threads[tid].push(msg);
+  if (currentPerson===p && ps[p].tid===tid) { renderMsgEl(p, msg); scrollBot(p); }
+}
+
+function renderMsgEl(p, msg) {
+  const box = document.getElementById(`messages-${p}`);
+  if (!box) return;
+  box.querySelector(".empty-state-msg")?.remove();
+  if (msg.system) {
+    const el=document.createElement("div"); el.className="system-event"; el.textContent=msg.text; box.appendChild(el); return;
+  }
+  const row=document.createElement("div"); row.className=`msg-row ${msg.role||"bot"}`;
+  const av=document.createElement("div"); av.className="msg-avatar";
+  av.textContent=msg.role==="bot"?"🤖":p==="a"?"👨‍💻":p==="b"?"🧪":"🚀";
+  const ct=document.createElement("div"); ct.className="msg-content";
+  const bbl=document.createElement("div"); bbl.className=`bubble ${msg.role||"bot"}`;
+  bbl.innerHTML=mdLight(msg.text||""); ct.appendChild(bbl);
+  if (msg.actions?.length) {
+    const btns=document.createElement("div"); btns.className="action-buttons";
+    msg.actions.forEach(a=>{
+      const btn=document.createElement("button"); btn.className="action-btn"; btn.textContent=a.label;
+      btn.onclick=()=>{ btn.parentElement.querySelectorAll(".action-btn").forEach(b=>b.classList.add("done")); a.fn(); };
+      btns.appendChild(btn);
+    });
+    ct.appendChild(btns);
+  }
+  row.appendChild(av); row.appendChild(ct); box.appendChild(row);
+}
+
+function sysEvent(p, tid, text) {
+  const msg={system:true,text}; appendAndRender(p,tid,msg);
+}
+function sysEventFor(p, tid, text) { sysEvent(p,tid,text); }
+
+function renderSteps(p, cur) {
+  const list=document.getElementById(`step-list-${p}`); if(!list) return; list.innerHTML="";
+  STEPS.forEach(s=>{
+    const cls=s.n<cur?"done":s.n===cur?"active":"pending";
+    const li=document.createElement("div"); li.className=`step-item ${cls}`;
+    const num=document.createElement("div"); num.className=`step-num ${cls}`; num.textContent=cls==="done"?"✓":s.n;
+    const lbl=document.createElement("span"); lbl.textContent=s.l;
+    li.appendChild(num); li.appendChild(lbl); list.appendChild(li);
+  });
+}
+
+function renderInfoA(tid) {
+  const panel=document.getElementById("info-a"); if(!panel) return;
+  const wf=ps.a.wf[tid]; const ticket=TICKETS.find(t=>t.id===tid);
+  if (!wf||!ticket) { panel.innerHTML=`<div class="panel-hint">点击左侧 Ticket 查看详情</div>`; return; }
+  panel.innerHTML=`<div class="info-section"><div class="info-title">任务信息</div>
+    <div class="info-row"><div class="info-label">Ticket</div><div class="info-value">${tid} — ${ticket.title}</div></div>
+    <div class="info-row"><div class="info-label">当前阶段</div><div class="info-value" style="color:var(--accent)">${wf.stateLabel||"—"}</div></div>
+    ${wf.branch?`<div class="info-row"><div class="info-label">分支</div><div class="info-value"><code>${wf.branch}</code></div></div>`:""}
+    ${wf.specUrl?`<div class="info-row"><div class="info-label">Spec</div><div class="info-value"><a href="${wf.specUrl}" target="_blank">查看 →</a></div></div>`:""}
+    ${wf.prUrl?`<div class="info-row"><div class="info-label">PR</div><div class="info-value"><a href="${wf.prUrl}" target="_blank">查看 PR →</a></div></div>`:""}
+    ${wf.testUrl?`<div class="info-row"><div class="info-label">测试环境</div><div class="info-value"><a href="${wf.testUrl}" target="_blank">${wf.testUrl}</a></div></div>`:""}
+  </div>`;
+}
+
+// ── Typing ────────────────────────────────────────────────────────────────────
+async function typing(p, ms) {
+  const el=document.getElementById(`typing-${p}`);
+  if(el&&currentPerson===p&&ps[p].tid) { el.style.display="flex"; await delay(ms); el.style.display="none"; }
+  else await delay(ms);
+}
+async function typingFor(p, ms) { return typing(p, ms); }
+
+// ── Badge ─────────────────────────────────────────────────────────────────────
+function addBadge(p) {
+  badges[p]++; const el=document.getElementById(`badge-${p}`);
+  if(el){el.textContent=badges[p];el.style.display="inline-block";}
+}
+function clearBadge(p) {
+  badges[p]=0; const el=document.getElementById(`badge-${p}`);
+  if(el) el.style.display="none";
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+const delay = ms => new Promise(r=>setTimeout(r,ms));
+function scrollBot(p) { const el=document.getElementById(`messages-${p}`); if(el) el.scrollTop=el.scrollHeight; }
+function mdLight(t) {
+  return t.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/`([^`]+)`/g,"<code>$1</code>")
+    .replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank">$1</a>')
+    .replace(/\n/g,"<br>");
+}
+</script>
+</body>
+</html>
