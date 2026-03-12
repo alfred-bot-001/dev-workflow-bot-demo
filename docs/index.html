@@ -371,10 +371,10 @@ function t(key, ...args) {
 
 // ── Tickets data ──────────────────────────────────────────────────────────────
 const TICKETS = [
-  { id:"PROJ-101", titleEn:"Login Page Redesign",    titleZh:"用户登录页面优化",  descEn:"Redesign login UI with phone+OTP support and remember me",   descZh:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能", priority:"High", est:"3d" },
-  { id:"PROJ-102", titleEn:"Payment Gateway",        titleZh:"支付接口集成",       descEn:"Integrate Stripe payment gateway with credit card & Apple Pay", descZh:"集成 Stripe 支付网关，支持信用卡和 Apple Pay", priority:"High", est:"5d" },
-  { id:"PROJ-103", titleEn:"Report Export Feature",  titleZh:"报表导出功能",       descEn:"Support Excel/PDF export for sales reports with date filters",  descZh:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围", priority:"Medium", est:"2d" },
-  { id:"PROJ-104", titleEn:"Push Notification System",titleZh:"推送通知系统",      descEn:"Integrate Firebase FCM for order status push notifications",    descZh:"集成 Firebase FCM，实现订单状态推送通知", priority:"Medium", est:"4d" },
+  { id:"PROJ-101", titleEn:"Login Page Redesign",    titleZh:"用户登录页面优化",  descEn:"Redesign login UI with phone+OTP support and remember me",   descZh:"优化登录页面 UI，支持手机号+验证码登录，增加记住密码功能", priority:"High", est:"3h" },
+  { id:"PROJ-102", titleEn:"Payment Gateway",        titleZh:"支付接口集成",       descEn:"Integrate Stripe payment gateway with credit card & Apple Pay", descZh:"集成 Stripe 支付网关，支持信用卡和 Apple Pay", priority:"High", est:"5h" },
+  { id:"PROJ-103", titleEn:"Report Export Feature",  titleZh:"报表导出功能",       descEn:"Support Excel/PDF export for sales reports with date filters",  descZh:"支持导出 Excel/PDF 格式的销售报表，支持自定义时间范围", priority:"Medium", est:"2h" },
+  { id:"PROJ-104", titleEn:"Push Notification System",titleZh:"推送通知系统",      descEn:"Integrate Firebase FCM for order status push notifications",    descZh:"集成 Firebase FCM，实现订单状态推送通知", priority:"Medium", est:"4h" },
 ];
 function ticketTitle(t2) { return lang==="en" ? t2.titleEn : t2.titleZh; }
 function ticketDesc(t2)  { return lang==="en" ? t2.descEn  : t2.descZh; }
